@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRUTAL STYLE — Барбершоп с характером</title>
+
+<!-- SEO и Meta-теги -->
+<meta name="description" content="BRUTAL STYLE — барбершоп в Москве. 12 мастеров, опасное бритьё, атмосфера байкерского гаража. Запись онлайн.">
+<meta property="og:title" content="BRUTAL STYLE — Барбершоп с характером">
+<meta property="og:description" content="EST. 2026 / MOSCOW. 12 мастеров. Никаких компромиссов.">
+<meta property="og:type" content="website">
+
+<!-- Favicon в виде ножниц -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='3' fill='%23d4121e'/><path d='M24 24 L44 8 L42 12 L24 26 Z' fill='%23f5f5f0'/><path d='M24 24 L44 40 L42 36 L24 22 Z' fill='%23f5f5f0'/></svg>">
+
+<!-- Schema.org для локального бизнеса (SEO + Google) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BarberShop",
+  "name": "BRUTAL STYLE",
+  "description": "Барбершоп с характером. 12 мастеров, опасное бритьё, атмосфера байкерского гаража.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "ул. Байкерская, 13",
+    "addressLocality": "Москва",
+    "addressCountry": "RU"
+  },
+  "telephone": "+79991234567",
+  "email": "hi@brutalstyle.ru",
+  "openingHours": "Mo-Su 10:00-22:00",
+  "priceRange": "₽₽"
+}
+</script>
+
+<!-- Шрифты -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --fg: #f5f5f0;
+    --accent: #d4121e;
+    --muted: #888;
+    --line: #1f1f1f;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Space Mono', 'Courier New', monospace;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ============================================
+     ДОСТУПНОСТЬ
+     ============================================ */
+  *:focus-visible { 
+    outline: 2px solid var(--accent); 
+    outline-offset: 2px; 
+  }
+
+  /* ============================================
+     ПРОГРЕСС-БАР СКРОЛЛА
+     ============================================ */
+  .scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--accent);
+    width: 0%;
+    z-index: 100001;
+    pointer-events: none;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* ============================================
+     КУРСОР-НОЖНИЦЫ
+     ============================================ */
+  .scissors-cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 32px; height: 32px;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+    will-change: left, top;
+    display: block;
+  }
+  .scissors-cursor.hidden { display: none !important; }
+  .scissors-cursor .blade-top, .scissors-cursor .blade-bottom { transform-origin: 24px 24px; }
+  .scissors-cursor.snip .blade-top { animation: snipTop 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .scissors-cursor.snip .blade-bottom { animation: snipBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  @keyframes snipTop { 0% { transform: rotate(0deg); } 35% { transform: rotate(20deg); } 100% { transform: rotate(0deg); } }
+  @keyframes snipBottom { 0% { transform: rotate(0deg); } 35% { transform: rotate(-20deg); } 100% { transform: rotate(0deg); } }
+
+  /* ============================================
+     КНОПКА "НАВЕРХ"
+     ============================================ */
+  .scroll-top {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    width: 50px; height: 50px;
+    background: var(--accent);
+    color: var(--fg);
+    border: 2px solid var(--fg);
+    font-family: 'Arial Black', sans-serif;
+    font-size: 24px;
+    cursor: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, background 0.3s;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { background: var(--fg); color: var(--accent); }
+
+  /* ============================================
+     HERO / VIDEO
+     ============================================ */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-wrap { 
+    position: absolute; inset: 0; overflow: hidden; 
+    background: #111;
+  }
+  .video-wrap video {
+    position: absolute; top: 50%; left: 50%;
+    width: 100%; height: 130%;
+    transform: translate(-50%, -56%);
+    object-fit: cover; border: 0;
+  }
+  .video-wrap::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 15%; background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none; z-index: 2;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.85) 100%);
+    z-index: 1;
+  }
+  .hero-content { position: relative; z-index: 3; text-align: center; padding: 0 20px; }
+  .hero-tag { font-size: 12px; letter-spacing: 4px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
+  .hero-title {
+    font-size: clamp(48px, 10vw, 140px); font-weight: 900; letter-spacing: -2px; line-height: 0.9;
+    text-transform: uppercase; margin-bottom: 20px; font-family: 'Arial Black', sans-serif;
+  }
+  .hero-sub { font-size: 14px; letter-spacing: 3px; color: var(--muted); margin-bottom: 40px; }
+  .hero-cta {
+    display: inline-block; padding: 18px 40px; background: var(--accent); color: var(--fg);
+    font-weight: bold; letter-spacing: 2px; text-transform: uppercase;
+    border: 2px solid var(--accent); transition: all 0.35s ease; cursor: none;
+  }
+  .hero-cta:hover { background: var(--fg); color: var(--accent); border-color: var(--fg); }
+
+  .mark-26 {
+    position: absolute; right: 30px; top: 50%; transform: translateY(-50%); z-index: 4;
+    font-family: 'Arial Black', sans-serif; font-size: clamp(80px, 12vw, 180px); font-weight: 900;
+    line-height: 1; color: var(--accent); letter-spacing: -6px; writing-mode: vertical-rl;
+    text-shadow: 0 0 20px rgba(212, 18, 30, 0.8), 0 0 60px rgba(212, 18, 30, 0.35), 4px 4px 0 rgba(0,0,0,0.6);
+    pointer-events: none; user-select: none;
+  }
+  .mark-26::before {
+    content: 'EST.'; position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    font-size: 13px; letter-spacing: 4px; color: var(--fg); writing-mode: horizontal-tb; text-shadow: none;
+  }
+
+  /* ============================================
+     TICKER
+     ============================================ */
+  .ticker {
+    background: var(--accent); color: var(--fg); padding: 14px 0; overflow: hidden;
+    border-top: 2px solid var(--fg); border-bottom: 2px solid var(--fg);
+  }
+  .ticker-track {
+    display: flex; width: max-content; animation: tickerScroll 40s linear infinite;
+    font-weight: bold; letter-spacing: 4px; font-size: 14px;
+  }
+  .ticker-track span { margin: 0 20px; }
+  @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-25%); } }
+
+  .ticker-secondary {
+    background: var(--fg); color: var(--bg); border-color: var(--bg);
+  }
+  .ticker-secondary .ticker-track {
+    font-weight: normal; font-size: 12px; animation-duration: 50s; letter-spacing: 3px;
+  }
+
+  /* ============================================
+     MANIFESTO & SECTIONS
+     ============================================ */
+  .manifesto { padding: 100px 20px; text-align: center; border-bottom: 1px solid var(--line); }
+  .manifesto h2 {
+    font-size: clamp(28px, 5vw, 56px); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+    max-width: 1000px; margin: 0 auto 30px; text-transform: uppercase; font-family: 'Arial Black', sans-serif;
+  }
+  .manifesto p { color: var(--muted); max-width: 700px; margin: 0 auto; font-size: 16px; letter-spacing: 1px; line-height: 1.8; }
+
+  .section { padding: 100px 20px; max-width: 1400px; margin: 0 auto; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 60px; border-bottom: 2px solid var(--fg); padding-bottom: 20px; }
+  .section-num { font-size: 14px; color: var(--accent); letter-spacing: 3px; }
+  .section-title { font-size: clamp(32px, 6vw, 72px); font-weight: 900; text-transform: uppercase; letter-spacing: -1px; font-family: 'Arial Black', sans-serif; }
+  .section-sub { color: var(--muted); font-size: 14px; letter-spacing: 2px; margin-bottom: 40px; line-height: 1.8; }
+
+  /* ============================================
+     SERVICES (с фиксированной высотой заголовков)
+     ============================================ */
+  .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2px; background: var(--line); border: 2px solid var(--fg); }
+  .service { background: var(--bg); padding: 40px 30px; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; cursor: none; }
+  .service:hover { background: var(--accent); color: var(--bg); }
+  .service-num { font-size: 12px; color: var(--accent); letter-spacing: 3px; margin-bottom: 15px; transition: color 0.4s; font-weight: bold; }
+  .service:hover .service-num { color: var(--bg); }
+  .service-name { 
+    font-size: 28px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; 
+    font-family: 'Arial Black', sans-serif; transition: color 0.4s;
+    min-height: 64px; /* Фиксируем высоту — двухстрочные заголовки не ломают сетку */
+    display: flex; align-items: center;
+  }
+  .service:hover .service-name { color: var(--fg); }
+  .service-price { font-size: 24px; color: var(--accent); font-weight: bold; margin-bottom: 20px; transition: color 0.4s; }
+  .service:hover .service-price { color: var(--fg); }
+  .service-desc { color: var(--muted); font-size: 14px; margin-bottom: 25px; line-height: 1.8; transition: color 0.4s, font-weight 0.4s; }
+  .service:hover .service-desc { color: #0a0a0a; font-weight: 600; text-shadow: 0 0 1px rgba(0,0,0,0.4); }
+  .service-steps { list-style: none; border-top: 1px solid var(--line); padding-top: 20px; transition: border-color 0.4s; }
+  .service:hover .service-steps { border-color: rgba(10, 10, 10, 0.4); }
+  .service-steps li { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: var(--muted); transition: color 0.4s; }
+  .service:hover .service-steps li { color: #0a0a0a; }
+  .service-steps li span:last-child { color: var(--fg); font-weight: bold; transition: color 0.4s; }
+  .service:hover .service-steps li span:last-child { color: var(--bg); font-weight: 900; }
+
+  /* ============================================
+     STATS
+     ============================================ */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2px; background: var(--line); border: 2px solid var(--fg); margin: 60px 0; }
+  .stat { background: var(--bg); padding: 40px 20px; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: none; }
+  .stat:hover { background: var(--accent); }
+  .stat-num { font-size: 56px; font-weight: 900; color: var(--accent); font-family: 'Arial Black', sans-serif; line-height: 1; margin-bottom: 10px; transition: color 0.4s; }
+  .stat:hover .stat-num { color: var(--fg); }
+  .stat-label { font-size: 12px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; transition: color 0.4s; font-weight: bold; }
+  .stat:hover .stat-label { color: var(--bg); }
+
+  /* ============================================
+     TEAM
+     ============================================ */
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+  .member { border: 2px solid var(--fg); padding: 30px; background: var(--bg); transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: none; position: relative; }
+  .member:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); transform: translateY(-6px); }
+  .member-avatar {
+    width: 60px; height: 60px; background: var(--bg); border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Arial Black', sans-serif; font-size: 24px; color: var(--accent);
+    margin-bottom: 20px; transition: all 0.4s;
+  }
+  .member:hover .member-avatar { background: var(--fg); color: var(--accent); border-color: var(--fg); }
+  .member-name { font-size: 32px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; font-family: 'Arial Black', sans-serif; transition: color 0.4s; }
+  .member:hover .member-name { color: var(--fg); }
+  .member-role { display: inline-block; background: var(--accent); color: var(--fg); padding: 4px 12px; font-size: 11px; letter-spacing: 2px; margin-bottom: 20px; transition: all 0.4s; font-weight: bold; }
+  .member:hover .member-role { background: var(--fg); color: var(--accent); }
+  .member-desc { color: var(--muted); font-size: 14px; line-height: 1.8; transition: color 0.4s, font-weight 0.4s; }
+  .member:hover .member-desc { color: #0a0a0a; font-weight: 600; text-shadow: 0 0 1px rgba(0,0,0,0.4); }
+
+  .team-extra { display: none; margin-top: 30px; }
+  .team-extra.visible { display: grid; }
+  .toggle-team-btn {
+    display: block; width: 100%; max-width: 400px; margin: 40px auto 0;
+    padding: 20px; background: transparent; color: var(--fg);
+    border: 2px solid var(--fg); font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;
+    cursor: none; transition: all 0.3s;
+  }
+  .toggle-team-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--fg); }
+
+  /* ============================================
+     BOOKING MODAL
+     ============================================ */
+  .open-booking-btn {
+    display: block; width: 100%; max-width: 500px; margin: 0 auto;
+    padding: 30px; background: var(--accent); color: var(--fg);
+    border: 4px solid var(--fg); font-family: 'Arial Black', sans-serif;
+    font-size: 24px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;
+    cursor: none; transition: all 0.3s; text-align: center;
+  }
+  .open-booking-btn:hover { background: var(--fg); color: var(--accent); border-color: var(--fg); }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(10, 10, 10, 0.95);
+    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    cursor: auto;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-content {
+    background: var(--bg); border: 4px solid var(--fg); padding: 50px;
+    max-width: 600px; width: 90%; position: relative;
+    transform: translateY(30px); transition: transform 0.4s ease;
+    cursor: auto;
+  }
+  .modal-overlay.active .modal-content { transform: translateY(0); }
+  .close-modal {
+    position: absolute; top: 15px; right: 20px; background: none; border: none;
+    color: var(--fg); font-size: 32px; font-family: 'Arial Black', sans-serif;
+    cursor: pointer; transition: color 0.3s;
+  }
+  .close-modal:hover { color: var(--accent); }
+  .modal-title { font-family: 'Arial Black', sans-serif; font-size: 48px; text-transform: uppercase; margin-bottom: 30px; color: var(--accent); }
+
+  .form-row { margin-bottom: 25px; }
+  .form-row label { display: block; font-size: 12px; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; font-weight: bold; cursor: auto; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; background: var(--bg); border: 2px solid var(--line); color: var(--fg);
+    padding: 16px; font-family: 'Space Mono', monospace; font-size: 16px;
+    transition: all 0.3s; cursor: auto;
+  }
+  .form-row select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4121e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center;
+    padding-right: 40px; cursor: pointer;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    outline: none; border-color: var(--accent); background: #111;
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .form-row textarea { min-height: 120px; resize: vertical; }
+  .submit-btn {
+    width: 100%; padding: 20px; background: var(--fg); color: var(--bg);
+    border: 2px solid var(--fg); font-weight: 900; letter-spacing: 4px;
+    text-transform: uppercase; font-size: 16px; cursor: pointer;
+    transition: all 0.3s; font-family: 'Arial Black', sans-serif;
+  }
+  .submit-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--fg); }
+
+  /* ============================================
+     SUCCESS MESSAGE (вместо alert)
+     ============================================ */
+  .success-message {
+    text-align: center; padding: 40px 20px;
+  }
+  .success-message h3 {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 36px; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .success-message p {
+    color: var(--fg); font-size: 16px; line-height: 1.6;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  .footer { border-top: 2px solid var(--fg); padding: 60px 20px 30px; margin-top: 100px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; max-width: 1400px; margin: 0 auto 40px; }
+  .footer-col h4 { font-size: 12px; letter-spacing: 3px; color: var(--accent); margin-bottom: 15px; text-transform: uppercase; }
+  .footer-col p, .footer-col a { color: var(--muted); font-size: 14px; display: block; margin-bottom: 6px; transition: color 0.3s; }
+  .footer-col a:hover { color: var(--accent); }
+  .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; letter-spacing: 2px; }
+
+  /* ============================================
+     SCROLL-REVEAL
+     ============================================ */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; } .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; } .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ============================================
+     ACCESSIBILITY
+     ============================================ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .scissors-cursor { display: none; }
+    body { cursor: auto; }
+    .reveal { opacity: 1; transform: none; }
+    .scroll-progress { display: none; }
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
+    .mark-26 { display: none; }
+    .section-head { flex-direction: column; gap: 10px; }
+    body { cursor: auto; }
+    .scissors-cursor { display: none; }
+    .service, .member, .stat, .hero-cta, .submit-btn, .toggle-team-btn, .open-booking-btn,
+    .form-row input, .form-row select, .form-row textarea, .close-modal { cursor: auto; }
+    .modal-content { padding: 30px 20px; width: 100%; height: 100%; border: none; overflow-y: auto; }
+    .modal-title { font-size: 36px; }
+    .team-grid, .team-extra { grid-template-columns: 1fr; }
+    .scroll-top { bottom: 20px; right: 20px; width: 44px; height: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Прогресс-бар скролла -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Кнопка "Наверх" -->
+<button class="scroll-top" id="scrollTop" aria-label="Наверх">↑</button>
+
+<!-- ========== КУРСОР-НОЖНИЦЫ ========== -->
+<svg class="scissors-cursor" id="scissorsCursor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <g class="blade-top">
+    <path d="M24 24 L44 8 L42 12 L24 26 Z" fill="#f5f5f0" stroke="#0a0a0a" stroke-width="0.8"/>
+    <circle cx="10" cy="38" r="5.5" fill="none" stroke="#f5f5f0" stroke-width="2.2"/>
+    <line x1="14" y1="34" x2="24" y2="24" stroke="#f5f5f0" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g class="blade-bottom">
+    <path d="M24 24 L44 40 L42 36 L24 22 Z" fill="#f5f5f0" stroke="#0a0a0a" stroke-width="0.8"/>
+    <circle cx="10" cy="10" r="5.5" fill="none" stroke="#f5f5f0" stroke-width="2.2"/>
+    <line x1="14" y1="14" x2="24" y2="24" stroke="#f5f5f0" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <circle cx="24" cy="24" r="2.5" fill="#d4121e" stroke="#0a0a0a" stroke-width="0.8"/>
+</svg>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="video-wrap">
+    <video autoplay muted loop playsinline preload="auto" poster="hero-bg.mp4">
+      <source src="hero-bg.mp4" type="video/mp4">
+      <!-- Fallback: если видео не грузится, показываем чёрный фон -->
+    </video>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">BARBERSHOP / EST. 2026 / MOSCOW</div>
+    <h1 class="hero-title">BRUTAL<br>STYLE</h1>
+    <div class="hero-sub">26</div>
+    <a href="#booking" class="hero-cta">Записаться →</a>
+  </div>
+  <div class="mark-26">26</div>
+</section>
+
+<!-- ========== TICKER 1 ========== -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span>BRUTAL STYLE</span><span></span><span>BARBERSHOP</span><span></span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span>✦</span>
+    <span>BRUTAL STYLE</span><span></span><span>BARBERSHOP</span><span></span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span></span>
+    <span>BRUTAL STYLE</span><span>✦</span><span>BARBERSHOP</span><span>✦</span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span></span>
+    <span>BRUTAL STYLE</span><span></span><span>BARBERSHOP</span><span></span><span>EST. 2026</span><span></span><span>MOSCOW</span><span>✦</span>
+  </div>
+</div>
+
+<!-- ========== MANIFESTO ========== -->
+<section class="manifesto reveal">
+  <h2>Мы не просто стрижём — мы создаём характер.</h2>
+  <p>Запах табака и дорогого виски, рифы AC/DC из колонок, звук триммера в 6 утра. Каждая черта — это манифест. Мы не делаем «как у всех», мы делаем так, как надо тебе. Никаких компромиссов.</p>
+</section>
+
+<!-- ========== SERVICES ========== -->
+<section class="section" id="services">
+  <div class="section-head reveal">
+    <span class="section-num">[ 01 / SERVICES ]</span>
+    <h2 class="section-title">Услуги</h2>
+  </div>
+  <p class="section-sub reveal">Каждая услуга — это ритуал. Мы не торопимся. Мы делаем точно.</p>
+
+  <div class="services">
+    <div class="service reveal reveal-delay-1">
+      <div class="service-num">[ 001 ]</div>
+      <div class="service-name">Стрижка</div>
+      <div class="service-price">1500 ₽</div>
+      <p class="service-desc">Фейд, андеркат или классика? Не важно. Важно, чтобы ты вышел отсюда другим человеком. 40 минут — и ты не узнаешь себя в зеркале.</p>
+      <ul class="service-steps">
+        <li><span>Консультация</span><span>10 мин</span></li><li><span>Мытьё</span><span>5 мин</span></li>
+        <li><span>Стрижка</span><span>40 мин</span></li><li><span>Укладка</span><span>10 мин</span></li>
+      </ul>
+    </div>
+    <div class="service reveal reveal-delay-2">
+      <div class="service-num">[ 002 ]</div>
+      <div class="service-name">Борода</div>
+      <div class="service-price">1000 ₽</div>
+      <p class="service-desc">Опасная бритва, горячее полотенце, масло. Ритуал, а не процедура. Твоя борода станет оружием.</p>
+      <ul class="service-steps">
+        <li><span>Коррекция</span><span>15 мин</span></li><li><span>Бритва</span><span>20 мин</span></li>
+        <li><span>Полотенце</span><span>5 мин</span></li><li><span>Масло</span><span>5 мин</span></li>
+      </ul>
+    </div>
+    <div class="service reveal reveal-delay-3">
+      <div class="service-num">[ 003 ]</div>
+      <div class="service-name">Королевское бритьё</div>
+      <div class="service-price">1800 ₽</div>
+      <p class="service-desc">Горячие полотенца, пена, опасная бритва. Как в 1920-х. Почувствуй себя королём, хотя бы на 45 минут.</p>
+      <ul class="service-steps">
+        <li><span>Распаривание</span><span>10 мин</span></li><li><span>Пена</span><span>5 мин</span></li>
+        <li><span>Бритьё</span><span>30 мин</span></li><li><span>Уход</span><span>10 мин</span></li>
+      </ul>
+    </div>
+    <div class="service reveal reveal-delay-4">
+      <div class="service-num">[ 004 ]</div>
+      <div class="service-name">Комплекс</div>
+      <div class="service-price">2200 ₽</div>
+      <p class="service-desc">Всё и сразу. Стрижка + борода + виски в подарок. Для тех, кто ценит время и не любит компромиссы.</p>
+      <ul class="service-steps">
+        <li><span>Стрижка</span><span>60 мин</span></li><li><span>Борода</span><span>40 мин</span></li>
+        <li><span>Массаж</span><span>10 мин</span></li><li><span>Whiskey</span><span>∞</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat reveal reveal-delay-1"><div class="stat-num" data-target="12">0</div><div class="stat-label">Мастеров</div></div>
+    <div class="stat reveal reveal-delay-2"><div class="stat-num" data-target="8000" data-suffix="+">0</div><div class="stat-label">Клиентов</div></div>
+    <div class="stat reveal reveal-delay-3"><div class="stat-num" data-target="8">0</div><div class="stat-label">Лет опыта</div></div>
+    <div class="stat reveal reveal-delay-4"><div class="stat-num" data-target="100" data-suffix="%">0</div><div class="stat-label">Качества</div></div>
+  </div>
+</section>
+
+<!-- ========== TICKER 2 ========== -->
+<div class="ticker ticker-secondary">
+  <div class="ticker-track">
+    <span>HAIRCUT</span><span></span><span>BEARD</span><span>✦</span><span>SHAVE</span><span></span><span>STYLE</span><span>✦</span>
+    <span>HAIRCUT</span><span></span><span>BEARD</span><span>✦</span><span>SHAVE</span><span></span><span>STYLE</span><span>✦</span>
+    <span>HAIRCUT</span><span></span><span>BEARD</span><span>✦</span><span>SHAVE</span><span></span><span>STYLE</span><span></span>
+    <span>HAIRCUT</span><span>✦</span><span>BEARD</span><span>✦</span><span>SHAVE</span><span>✦</span><span>STYLE</span><span>✦</span>
+  </div>
+</div>
+
+<!-- ========== TEAM ========== -->
+<section class="section" id="team">
+  <div class="section-head reveal">
+    <span class="section-num">[ 02 / TEAM ]</span>
+    <h2 class="section-title">Мастера</h2>
+  </div>
+  <p class="section-sub reveal">Не просто барберы. Это люди с характером, которые живут своим делом.</p>
+
+  <div class="team-grid">
+    <div class="member reveal reveal-delay-1">
+      <div class="member-avatar">В</div>
+      <div class="member-name">Виктор</div>
+      <span class="member-role">[ 10 YRS ] · Старший барбер</span>
+      <p class="member-desc">Классика и опасное бритьё. Работает с опасной бритвой как хирург.</p>
+    </div>
+    <div class="member reveal reveal-delay-2">
+      <div class="member-avatar">Д</div>
+      <div class="member-name">Дмитрий</div>
+      <span class="member-role">[ 07 YRS ] · Барбер</span>
+      <p class="member-desc">Современные стрижки и работа с бородой. Знает все тренды и классические техники.</p>
+    </div>
+    <div class="member reveal reveal-delay-3">
+      <div class="member-avatar">А</div>
+      <div class="member-name">Алекс</div>
+      <span class="member-role">[ 05 YRS ] · Барбер</span>
+      <p class="member-desc">Эксперт по фейду и креативным стрижкам. Делает то, что другие не берутся.</p>
+    </div>
+  </div>
+
+  <div class="team-grid team-extra" id="extra-team">
+    <div class="member"><div class="member-avatar">М</div><div class="member-name">Макс</div><span class="member-role">[ 04 YRS ]</span><p class="member-desc">Специалист по детским стрижкам и легкому фейду.</p></div>
+    <div class="member"><div class="member-avatar">С</div><div class="member-name">Сергей</div><span class="member-role">[ 06 YRS ]</span><p class="member-desc">Классические британские стрижки. Педантичность.</p></div>
+    <div class="member"><div class="member-avatar">И</div><div class="member-name">Иван</div><span class="member-role">[ 03 YRS ]</span><p class="member-desc">Креатив, окрашивание, работа с длинными волосами.</p></div>
+    <div class="member"><div class="member-avatar">Р</div><div class="member-name">Роман</div><span class="member-role">[ 08 YRS ]</span><p class="member-desc">Моделирование бороды. Геометрия и симметрия.</p></div>
+    <div class="member"><div class="member-avatar">К</div><div class="member-name">Кирилл</div><span class="member-role">[ 02 YRS ]</span><p class="member-desc">Новая кровь. Тренды TikTok и Gen Z стиль.</p></div>
+    <div class="member"><div class="member-avatar">О</div><div class="member-name">Олег</div><span class="member-role">[ 09 YRS ]</span><p class="member-desc">Опасное бритьё. Стажировка в Лондоне.</p></div>
+    <div class="member"><div class="member-avatar">Н</div><div class="member-name">Никита</div><span class="member-role">[ 05 YRS ]</span><p class="member-desc">Спортивные стрижки. Быстро, четко, без лишнего.</p></div>
+    <div class="member"><div class="member-avatar">Е</div><div class="member-name">Егор</div><span class="member-role">[ 04 YRS ]</span><p class="member-desc">Текстурные стрижки. Работа с кудрявыми волосами.</p></div>
+    <div class="member"><div class="member-avatar">П</div><div class="member-name">Павел</div><span class="member-role">[ 07 YRS ]</span><p class="member-desc">Универсал. Делает всё, от классики до авангарда.</p></div>
+  </div>
+
+  <button class="toggle-team-btn" id="toggle-team">[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]</button>
+</section>
+
+<!-- ========== BOOKING ========== -->
+<section class="section" id="booking">
+  <div class="section-head reveal">
+    <span class="section-num">[ 03 / BOOKING ]</span>
+    <h2 class="section-title">Записаться</h2>
+  </div>
+  <button class="open-booking-btn reveal" id="open-booking">ЗАПИСАТЬСЯ НА СТРИЖКУ</button>
+</section>
+
+<!-- МОДАЛКА -->
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal-content">
+    <button class="close-modal" id="close-booking">✕</button>
+    <h2 class="modal-title" id="modal-title">ЗАПИСЬ</h2>
+    
+    <!-- Форма -->
+    <form id="booking-form">
+      <div class="form-row">
+        <label>Имя</label>
+        <input type="text" id="form-name" required placeholder="Как к тебе обращаться?">
+      </div>
+      <div class="form-row">
+        <label>Телефон</label>
+        <input type="tel" id="phone" required placeholder="+7 (___) ___-__-__">
+      </div>
+      <div class="form-row">
+        <label>Услуга</label>
+        <select id="form-service" required>
+          <option value="">Выберите услугу</option>
+          <option>Стрижка</option>
+          <option>Борода</option>
+          <option>Королевское бритьё</option>
+          <option>Комплекс</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Мастер</label>
+        <select id="form-master">
+          <option value="">Любой мастер</option>
+          <option>Виктор — Старший барбер [10 лет]</option>
+          <option>Дмитрий — Барбер [7 лет]</option>
+          <option>Алекс — Барбер [5 лет]</option>
+          <option>Макс — Барбер [4 года]</option>
+          <option>Сергей — Барбер [6 лет]</option>
+          <option>Иван — Барбер [3 года]</option>
+          <option>Роман — Барбер [8 лет]</option>
+          <option>Кирилл — Барбер [2 года]</option>
+          <option>Олег — Барбер [9 лет]</option>
+          <option>Никита — Барбер [5 лет]</option>
+          <option>Егор — Барбер [4 года]</option>
+          <option>Павел — Барбер [7 лет]</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Комментарий</label>
+        <textarea id="form-comment" placeholder="Пожелания, время, особенности..."></textarea>
+      </div>
+      <button type="submit" class="submit-btn">ОТПРАВИТЬ ЗАЯВКУ →</button>
+    </form>
+
+    <!-- Сообщение об успехе (скрыто по умолчанию) -->
+    <div class="success-message" id="success-message" style="display: none;">
+      <h3>ЗАЯВКА ПРИНЯТА ✦</h3>
+      <p>Мы перезвоним тебе в течение 15 минут.<br>Готовься к переменам.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>[ Адрес ]</h4>
+      <p>г. Москва</p><p>ул. Байкерская, 13</p>
+    </div>
+    <div class="footer-col">
+      <h4>[ Часы ]</h4>
+      <p>ПН — ВС</p><p>10:00 — 22:00</p>
+    </div>
+    <div class="footer-col">
+      <h4>[ Контакты ]</h4>
+      <a href="tel:+79991234567">+7 999 123-45-67</a>
+      <a href="mailto:hi@brutalstyle.ru">hi@brutalstyle.ru</a>
+    </div>
+    <div class="footer-col">
+      <h4>[ Соцсети ]</h4>
+      <a href="#" title="Скоро">Instagram</a>
+      <a href="#" title="Скоро">Telegram</a>
+      <a href="#" title="Скоро">VK</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 BRUTAL STYLE · DESIGNED WITH ✦ IN MOSCOW</div>
+</footer>
+
+<script>
+  /* ========== КУРСОР ========== */
+  const cursor = document.getElementById('scissorsCursor');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  let cursorVisible = true;
+  let animationId = null;
+
+  function animateCursor() {
+    if (!cursorVisible) return;
+    cx += (mx - cx) * 0.22; 
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px'; 
+    cursor.style.top = cy + 'px';
+    animationId = requestAnimationFrame(animateCursor);
+  }
+
+  document.addEventListener('mousemove', e => { 
+    mx = e.clientX; my = e.clientY; 
+    if (cursorVisible && !animationId) animateCursor();
+  });
+  animateCursor();
+
+  document.addEventListener('mousedown', () => {
+    if (cursorVisible) {
+      cursor.classList.remove('snip'); 
+      void cursor.offsetWidth; 
+      cursor.classList.add('snip');
+    }
+  });
+  cursor.addEventListener('animationend', () => cursor.classList.remove('snip'));
+
+  const formElements = document.querySelectorAll('input, select, textarea');
+  const modal = document.getElementById('booking-modal');
+  const openBtn = document.getElementById('open-booking');
+  const closeBtn = document.getElementById('close-booking');
+
+  function hideCursor() {
+    cursorVisible = false;
+    cursor.classList.add('hidden');
+    if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
+  }
+  function showCursor() {
+    cursorVisible = true;
+    cursor.classList.remove('hidden');
+    if (!animationId) animateCursor();
+  }
+
+  formElements.forEach(el => {
+    el.addEventListener('focus', hideCursor);
+    el.addEventListener('blur', () => {
+      setTimeout(() => {
+        const activeEl = document.activeElement;
+        if (!activeEl || !activeEl.closest('.modal-content')) showCursor();
+      }, 10);
+    });
+  });
+
+  openBtn.addEventListener('click', () => { modal.classList.add('active'); hideCursor(); });
+  
+  function closeModal() {
+    modal.classList.remove('active');
+    showCursor();
+    // Сброс формы при закрытии
+    setTimeout(() => {
+      document.getElementById('booking-form').style.display = 'block';
+      document.getElementById('success-message').style.display = 'none';
+      document.getElementById('modal-title').textContent = 'ЗАПИСЬ';
+      document.getElementById('booking-form').reset();
+    }, 400);
+  }
+  
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { 
+    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+  });
+
+  /* ========== ОБРАБОТКА ФОРМЫ (без alert) ========== */
+  document.getElementById('booking-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Собираем данные (готово для отправки на бэкенд/Telegram)
+    const data = {
+      name: document.getElementById('form-name').value,
+      phone: document.getElementById('phone').value,
+      service: document.getElementById('form-service').value,
+      master: document.getElementById('form-master').value,
+      comment: document.getElementById('form-comment').value,
+      date: new Date().toISOString()
+    };
+    
+    console.log('Заявка:', data); // Для отладки
+    
+    // Показываем сообщение об успехе
+    this.style.display = 'none';
+    document.getElementById('modal-title').textContent = 'ГОТОВО';
+    document.getElementById('success-message').style.display = 'block';
+    
+    // TODO: Здесь можно добавить отправку на сервер:
+    // fetch('/api/booking', { method: 'POST', body: JSON.stringify(data) })
+  });
+
+  /* ========== ПРОГРЕСС-БАР СКРОЛЛА ========== */
+  const scrollProgress = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', () => {
+    const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    scrollProgress.style.width = scrolled + '%';
+  }, { passive: true });
+
+  /* ========== КНОПКА "НАВЕРХ" ========== */
+  const scrollTopBtn = document.getElementById('scrollTop');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 500) scrollTopBtn.classList.add('visible');
+    else scrollTopBtn.classList.remove('visible');
+  }, { passive: true });
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  /* ========== SCROLL-REVEAL ========== */
+  const reveals = document.querySelectorAll('.reveal');
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => revealObs.observe(el));
+
+  /* ========== СЧЁТЧИКИ ========== */
+  const statNums = document.querySelectorAll('.stat-num');
+  const statsObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.done) {
+        entry.target.dataset.done = '1';
+        const target = parseInt(entry.target.dataset.target);
+        const suffix = entry.target.dataset.suffix || '';
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 40));
+        const interval = setInterval(() => {
+          current += step;
+          if (current >= target) { current = target; clearInterval(interval); }
+          entry.target.textContent = current.toLocaleString() + suffix;
+        }, 25);
+      }
+    });
+  }, { threshold: 0.5 });
+  statNums.forEach(el => statsObs.observe(el));
+
+  /* ========== РАСКРЫТИЕ МАСТЕРОВ ========== */
+  const toggleBtn = document.getElementById('toggle-team');
+  const extraTeam = document.getElementById('extra-team');
+  let teamExpanded = false;
+  toggleBtn.addEventListener('click', () => {
+    teamExpanded = !teamExpanded;
+    extraTeam.classList.toggle('visible', teamExpanded);
+    toggleBtn.textContent = teamExpanded ? '[ СКРЫТЬ МАСТЕРОВ ↑ ]' : '[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]';
+  });
+
+  /* ========== МАСКА ТЕЛЕФОНА ========== */
+  const phoneInput = document.getElementById('phone');
+  if(phoneInput) {
+    phoneInput.addEventListener('input', function (e) {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 0) {
+        if (val[0] === '7' || val[0] === '8') val = val.substring(1);
+        let res = '+7';
+        if (val.length > 0) res += ' (' + val.substring(0, 3);
+        if (val.length >= 4) res += ') ' + val.substring(3, 6);
+        if (val.length >= 7) res += '-' + val.substring(6, 8);
+        if (val.length >= 9) res += '-' + val.substring(8, 10);
+        e.target.value = res;
+      } else {
+        e.target.value = '';
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
