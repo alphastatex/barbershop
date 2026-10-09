@@ -1,6 +1,6 @@
 // @ts-check
 import { formatPhone } from "./utils.js";
-import { TG_CHAT_ID } from './config.js';
+const TG_CHAT_ID = '5641970486';
 
 /* ========== КУРСОР ========== */
 const cursor = /** @type {HTMLElement} */ (document.getElementById("scissorsCursor"));
