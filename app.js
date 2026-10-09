@@ -1,7 +1,39 @@
 // @ts-check
 import { formatPhone } from "./utils.js";
 const TG_CHAT_ID = '5641970486';
+// === TELEGRAM MINI APP INIT ===
+const tg = window.Telegram.WebApp;
 
+// Разворачиваем приложение на весь экран
+tg.expand(); 
+
+// Настраиваем цвета под тему Telegram (опционально, но приятно)
+document.body.style.backgroundColor = tg.themeParams.bg_color || '#0a0a0a';
+
+// АВТОЗАПОЛНЕНИЕ ИМЕНИ: если пользователь открыл через Telegram, берем его имя
+const nameInput = /** @type {HTMLInputElement} */ (document.getElementById('form-name'));
+if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
+  if (nameInput) {
+    nameInput.value = tg.initDataUnsafe.user.first_name;
+    nameInput.readOnly = true; // Блокируем редактирование, так как имя официальное
+  }
+}
+
+// Настройка главной кнопки (MainButton) внизу экрана Telegram
+tg.MainButton.setText('ЗАПИСАТЬСЯ НА СТРИЖКУ');
+tg.MainButton.setTextColor('#ffffff');
+tg.MainButton.setColor('#ff0000'); // Красный цвет в стиле брутализма
+// Пока не показываем кнопку, она появится когда откроется модалка
+tg.MainButton.hide(); 
+// === END MINI APP INIT ===
+// Клик по главной кнопке Telegram = отправка формы
+tg.MainButton.onClick(() => {
+  // Имитируем клик по кнопке отправки в форме, если она есть
+  const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
+  if (submitBtn) {
+    submitBtn.click();
+  }
+});
 /* ========== КУРСОР ========== */
 const cursor = /** @type {HTMLElement} */ (document.getElementById("scissorsCursor"));
 let mx = 0;
@@ -70,9 +102,21 @@ for (const el of formElements) {
 openBtn.addEventListener("click", () => {
 	modal.classList.add("active");
 	hideCursor();
+	
+	// ПОКАЗЫВАЕМ КНОПКУ TELEGRAM
+	if (tg.MainButton.isVisible === false) {
+		tg.MainButton.show();
+	}
 });
 
 function closeModal() {
+	modal.classList.remove("active");
+	showCursor();
+	
+	// СКРЫВАЕМ КНОПКУ TELEGRAM
+	tg.MainButton.hide();
+	
+    // ... остальной код закрытия ...
 	modal.classList.remove("active");
 	showCursor();
 	setTimeout(() => {
