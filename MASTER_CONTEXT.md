@@ -307,6 +307,14 @@ Playwright быстрее, поддерживает несколько брау�
 - Добавить тёмную/светлую тему (переключатель)
 - Добавить страницу "Отзывы клиентов"
 - Добавить интеграцию с CRM для заявок
-   ## Ссылки
-   - **GitHub репозиторий**: https://github.com/alphastatex/barbershop
-   - **Живой сайт**: https://alphastatex.github.io/barbershop/
+
+  ## Ссылки
+  - **GitHub репозиторий**: https://github.com/alphastatex/barbershop
+  - **Живой сайт**: https://alphastatex.github.io/barbershop/
+
+  ## История изменений
+
+  02.10.2026 — День 2
+  ✅ Исправил проблему с путями: убрал `<base href="/barbershop/">` и использовал относительные пути
+  ✅ Сайт теперь работает локально (Live Server) и на GitHub Pages одинаково
+  ✅ Задеплоил на GitHub Pages: https://alphastatex.github.io/barbershop/
