@@ -1,45 +1,11 @@
 // @ts-check
 import { formatPhone } from "./utils.js";
+
 const TG_CHAT_ID = '5641970486';
-// === TELEGRAM MINI APP INIT ===
-const tg = window.Telegram.WebApp;
 
-// Разворачиваем приложение на весь экран
-tg.expand(); 
-
-// Настраиваем цвета под тему Telegram (опционально, но приятно)
-document.body.style.backgroundColor = tg.themeParams.bg_color || '#0a0a0a';
-
-// АВТОЗАПОЛНЕНИЕ ИМЕНИ: если пользователь открыл через Telegram, берем его имя
-const nameInput = /** @type {HTMLInputElement} */ (document.getElementById('form-name'));
-if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
-  if (nameInput) {
-    nameInput.value = tg.initDataUnsafe.user.first_name;
-    nameInput.readOnly = true; // Блокируем редактирование, так как имя официальное
-  }
-}
-
-// Настройка главной кнопки (MainButton) внизу экрана Telegram
-tg.MainButton.setText('ЗАПИСАТЬСЯ НА СТРИЖКУ');
-tg.MainButton.setTextColor('#ffffff');
-tg.MainButton.setColor('#ff0000'); // Красный цвет в стиле брутализма
-// Пока не показываем кнопку, она появится когда откроется модалка
-tg.MainButton.hide(); 
-// === END MINI APP INIT ===
-// Клик по главной кнопке Telegram = отправка формы
-tg.MainButton.onClick(() => {
-  // Имитируем клик по кнопке отправки в форме, если она есть
-  const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
-  if (submitBtn) {
-    submitBtn.click();
-  }
-});
 /* ========== КУРСОР ========== */
 const cursor = /** @type {HTMLElement} */ (document.getElementById("scissorsCursor"));
-let mx = 0;
-let my = 0;
-let cx = 0;
-let cy = 0;
+let mx = 0, my = 0, cx = 0, cy = 0;
 let cursorVisible = true;
 /** @type {number | null} */
 let animationId = null;
@@ -63,16 +29,19 @@ animateCursor();
 document.addEventListener("mousedown", () => {
 	if (cursorVisible) {
 		cursor.classList.remove("snip");
-		void cursor.offsetWidth; // force reflow
+		void cursor.offsetWidth;
 		cursor.classList.add("snip");
 	}
 });
 cursor.addEventListener("animationend", () => cursor.classList.remove("snip"));
 
+/* ========== МОДАЛКА БРОНИРОВАНИЯ ========== */
 const formElements = document.querySelectorAll("input, select, textarea");
 const modal = /** @type {HTMLElement} */ (document.getElementById("booking-modal"));
 const openBtn = /** @type {HTMLElement} */ (document.getElementById("open-booking"));
 const closeBtn = /** @type {HTMLElement} */ (document.getElementById("close-booking"));
+const bookingForm = /** @type {HTMLFormElement} */ (document.getElementById("booking-form"));
+const phoneInput = /** @type {HTMLInputElement} */ (document.getElementById("phone"));
 
 function hideCursor() {
 	cursorVisible = false;
@@ -102,32 +71,25 @@ for (const el of formElements) {
 openBtn.addEventListener("click", () => {
 	modal.classList.add("active");
 	hideCursor();
-	
-	// ПОКАЗЫВАЕМ КНОПКУ TELEGRAM
-	if (tg.MainButton.isVisible === false) {
-		tg.MainButton.show();
+	// Показываем кнопку Telegram при открытии модалки
+	if (window.Telegram?.WebApp?.MainButton) {
+		window.Telegram.WebApp.MainButton.show();
 	}
 });
 
 function closeModal() {
-	modal.classList.remove("active");
-	showCursor();
+	// Скрываем кнопку Telegram при закрытии модалки
+	if (window.Telegram?.WebApp?.MainButton) {
+		window.Telegram.WebApp.MainButton.hide();
+	}
 	
-	// СКРЫВАЕМ КНОПКУ TELEGRAM
-	tg.MainButton.hide();
-	
-    // ... остальной код закрытия ...
 	modal.classList.remove("active");
 	showCursor();
 	setTimeout(() => {
-		const form = /** @type {HTMLFormElement} */ (document.getElementById("booking-form"));
-		const successMsg = /** @type {HTMLElement} */ (document.getElementById("success-message"));
-		const modalTitle = /** @type {HTMLElement} */ (document.getElementById("modal-title"));
-
-		form.style.display = "block";
-		successMsg.style.display = "none";
-		modalTitle.textContent = "ЗАПИСЬ";
-		form.reset();
+		bookingForm.style.display = "block";
+		/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "none";
+		/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ЗАПИСЬ";
+		bookingForm.reset();
 	}, 400);
 }
 
@@ -136,15 +98,10 @@ modal.addEventListener("click", (e) => {
 	if (e.target === modal) closeModal();
 });
 document.addEventListener("keydown", (e) => {
-	if (e.key === "Escape" && modal.classList.contains("active")) {
-		closeModal();
-	}
+	if (e.key === "Escape" && modal.classList.contains("active")) closeModal();
 });
 
 /* ========== ОБРАБОТКА ФОРМЫ С МАСКОЙ ========== */
-const bookingForm = /** @type {HTMLFormElement} */ (document.getElementById("booking-form"));
-const phoneInput = /** @type {HTMLInputElement} */ (document.getElementById("phone"));
-
 if (phoneInput) {
 	phoneInput.addEventListener("input", (e) => {
 		const input = /** @type {HTMLInputElement} */ (e.target);
@@ -153,8 +110,8 @@ if (phoneInput) {
 }
 
 /**
- * Отправляет данные бронирования в Telegram
- * @param {{name: string, phone: string, service: string, master: string, comment: string}} data - данные из формы
+ * Отправляет данные бронирования в Telegram через Cloudflare Proxy
+ * @param {{name: string, phone: string, service: string, master: string, comment: string}} data
  */
 async function sendBookingToTelegram(data) {
 	const text = `
@@ -169,33 +126,20 @@ async function sendBookingToTelegram(data) {
 📅 ${new Date().toLocaleString('ru-RU')}
   `.trim();
 
-  try {
-    // Ссылка на Cloudflare Worker (прокси)
-    const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
-
-    const res = await fetch(
-      `${PROXY_URL}/sendMessage`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TG_CHAT_ID,
-          text,
-          parse_mode: 'HTML',
-        }),
-      }
-    );
-		if (!res.ok) {
-			console.error('TG API error:', await res.text());
-		} else {
-			console.log('✅ Заявка отправлена в Telegram');
-		}
+	try {
+		const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
+		const res = await fetch(`${PROXY_URL}/sendMessage`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: 'HTML' }),
+		});
+		if (!res.ok) console.error('TG API error:', await res.text());
+		else console.log('✅ Заявка отправлена в Telegram');
 	} catch (error) {
 		console.error('❌ Не удалось отправить в Telegram:', error);
 	}
 }
 
-// ⚠️ ИСПРАВЛЕНИЕ ЗДЕСЬ: добавлено ключевое слово async перед (e)
 bookingForm.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	
@@ -209,82 +153,88 @@ bookingForm.addEventListener("submit", async (e) => {
 	};
 
 	console.log("Заявка:", data);
-
-	// Отправляем в Telegram
 	await sendBookingToTelegram(data);
 
-	// Показываем успех
 	bookingForm.style.display = "none";
 	/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
 	/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
 });
 
+/* ========== TELEGRAM MINI APP INIT (В КОНЦЕ, КОГДА ВСЁ ЗАГРУЖЕНО) ========== */
+if (window.Telegram && window.Telegram.WebApp) {
+	const tg = window.Telegram.WebApp;
+	tg.ready();
+	tg.expand();
+
+	if (tg.themeParams.bg_color) {
+		document.body.style.backgroundColor = tg.themeParams.bg_color;
+	}
+
+	const nameInput = /** @type {HTMLInputElement} */ (document.getElementById('form-name'));
+	if (tg.initDataUnsafe?.user?.first_name && nameInput) {
+		nameInput.value = tg.initDataUnsafe.user.first_name;
+		nameInput.readOnly = true;
+	}
+
+	tg.MainButton.setText('ЗАПИСАТЬСЯ НА СТРИЖКУ');
+	tg.MainButton.setTextColor('#ffffff');
+	tg.MainButton.setColor('#ff0000');
+	tg.MainButton.hide(); // Скрыта по умолчанию
+
+	tg.MainButton.onClick(() => {
+		const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
+		if (submitBtn) submitBtn.click();
+	});
+}
+
 /* ========== ПРОГРЕСС-БАР СКРОЛЛА ========== */
 const scrollProgress = /** @type {HTMLElement} */ (document.getElementById("scrollProgress"));
-window.addEventListener(
-	"scroll",
-	() => {
-		const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-		scrollProgress.style.width = `${scrolled}%`;
-	},
-	{ passive: true }
-);
+window.addEventListener("scroll", () => {
+	const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+	scrollProgress.style.width = `${scrolled}%`;
+}, { passive: true });
 
 /* ========== КНОПКА "НАВЕРХ" ========== */
 const scrollTopBtn = /** @type {HTMLElement} */ (document.getElementById("scrollTop"));
-window.addEventListener(
-	"scroll",
-	() => {
-		if (window.scrollY > 500) scrollTopBtn.classList.add("visible");
-		else scrollTopBtn.classList.remove("visible");
-	},
-	{ passive: true }
-);
+window.addEventListener("scroll", () => {
+	if (window.scrollY > 500) scrollTopBtn.classList.add("visible");
+	else scrollTopBtn.classList.remove("visible");
+}, { passive: true });
 scrollTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
 /* ========== SCROLL-REVEAL ========== */
 const reveals = document.querySelectorAll(".reveal");
-const revealObs = new IntersectionObserver(
-	(entries) => {
-		for (const entry of entries) {
-			if (entry.isIntersecting) entry.target.classList.add("visible");
-		}
-	},
-	{ threshold: 0.15 }
-);
-for (const el of reveals) {
-	revealObs.observe(el);
-}
+const revealObs = new IntersectionObserver((entries) => {
+	for (const entry of entries) {
+		if (entry.isIntersecting) entry.target.classList.add("visible");
+	}
+}, { threshold: 0.15 });
+for (const el of reveals) revealObs.observe(el);
 
 /* ========== СЧЁТЧИКИ ========== */
 const statNums = document.querySelectorAll(".stat-num");
-const statsObs = new IntersectionObserver(
-	(entries) => {
-		for (const entry of entries) {
-			const el = /** @type {HTMLElement} */ (entry.target);
-			if (entry.isIntersecting && !el.dataset.done) {
-				el.dataset.done = "1";
-				const target = Number.parseInt(el.dataset.target || "0", 10);
-				const suffix = el.dataset.suffix || "";
-				let current = 0;
-				const step = Math.max(1, Math.ceil(target / 40));
+const statsObs = new IntersectionObserver((entries) => {
+	for (const entry of entries) {
+		const el = /** @type {HTMLElement} */ (entry.target);
+		if (entry.isIntersecting && !el.dataset.done) {
+			el.dataset.done = "1";
+			const target = Number.parseInt(el.dataset.target || "0", 10);
+			const suffix = el.dataset.suffix || "";
+			let current = 0;
+			const step = Math.max(1, Math.ceil(target / 40));
 
-				const intervalId = window.setInterval(() => {
-					current += step;
-					if (current >= target) {
-						current = target;
-						clearInterval(intervalId);
-					}
-					el.textContent = current.toLocaleString() + suffix;
-				}, 25);
-			}
+			const intervalId = window.setInterval(() => {
+				current += step;
+				if (current >= target) {
+					current = target;
+					clearInterval(intervalId);
+				}
+				el.textContent = current.toLocaleString() + suffix;
+			}, 25);
 		}
-	},
-	{ threshold: 0.5 }
-);
-for (const el of statNums) {
-	statsObs.observe(el);
-}
+	}
+}, { threshold: 0.5 });
+for (const el of statNums) statsObs.observe(el);
 
 /* ========== РАСКРЫТИЕ МАСТЕРОВ ========== */
 const toggleBtn = /** @type {HTMLButtonElement} */ (document.getElementById("toggle-team"));
@@ -294,9 +244,7 @@ let teamExpanded = false;
 toggleBtn.addEventListener("click", () => {
 	teamExpanded = !teamExpanded;
 	extraTeam.classList.toggle("visible", teamExpanded);
-	toggleBtn.textContent = teamExpanded
-		? "[ СКРЫТЬ МАСТЕРОВ ↑ ]"
-		: "[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]";
+	toggleBtn.textContent = teamExpanded ? "[ СКРЫТЬ МАСТЕРОВ ↑ ]" : "[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]";
 });
 
 /* ========== МОДАЛКА МАСТЕРОВ ========== */
@@ -305,18 +253,18 @@ const closeMasterModal = /** @type {HTMLElement} */ (document.getElementById("cl
 
 /** @type {Record<string, {name: string, role: string, desc: string, stats: {label: string, value: string}[]}>} */
 const mastersData = {
-	1: { name: "Виктор", role: "[ 10 YRS ] · Старший барбер", desc: "Легенда BRUTAL STYLE. Виктор начинал ещё в 90-х, когда опасная бритва была единственным инструментом. Его техника бритья — это медитация. Клиенты приходят не просто за стрижкой, а за ритуалом.", stats: [{ label: "Специализация", value: "Классика, опасное бритьё" }, { label: "Опыт", value: "10 лет" }, { label: "Клиентов", value: "3200+" }, { label: "Напиток", value: "Jameson" }] },
-	2: { name: "Дмитрий", role: "[ 07 YRS ] · Барбер", desc: "Дмитрий — мастер современных стрижек. Он знает все тренды от fade до undercut, но никогда не забывает о классике. Его клиенты — молодые профессионалы, которые ценят стиль.", stats: [{ label: "Специализация", value: "Fade, Undercut, Modern" }, { label: "Опыт", value: "7 лет" }, { label: "Клиентов", value: "2100+" }, { label: "Напиток", value: "IPA Beer" }] },
-	3: { name: "Алекс", role: "[ 05 YRS ] · Барбер", desc: "Алекс — креативщик. Он берётся за самые сложные задачи: асимметрия, текстуры, эксперименты. Если хочешь что-то действительно уникальное — тебе к нему.", stats: [{ label: "Специализация", value: "Креатив, текстуры" }, { label: "Опыт", value: "5 лет" }, { label: "Клиентов", value: "1500+" }, { label: "Напиток", value: "Espresso" }] },
-	4: { name: "Макс", role: "[ 04 YRS ] · Барбер", desc: "Макс — мастер терпения. Он обожает работать с детьми и знает, как найти подход к самому непоседливому ребёнку. Лёгкий фейд и детские стрижки — его конёк.", stats: [{ label: "Специализация", value: "Детские стрижки, лёгкий фейд" }, { label: "Опыт", value: "4 года" }, { label: "Клиентов", value: "1200+" }, { label: "Напиток", value: "Coca-Cola" }] },
-	5: { name: "Сергей", role: "[ 06 YRS ] · Барбер", desc: "Сергей — перфекционист британской школы. Он может потратить лишний час, но сделает всё идеально. Классические стрижки, чёткие линии, безупречность.", stats: [{ label: "Специализация", value: "Британская классика" }, { label: "Опыт", value: "6 лет" }, { label: "Клиентов", value: "1800+" }, { label: "Напиток", value: "English Breakfast Tea" }] },
-	6: { name: "Иван", role: "[ 03 YRS ] · Барбер", desc: "Иван — художник. Он работает с длинными волосами, делает окрашивания, создаёт образы. Если хочешь перемен — он поможет.", stats: [{ label: "Специализация", value: "Длинные волосы, окрашивание" }, { label: "Опыт", value: "3 года" }, { label: "Клиентов", value: "900+" }, { label: "Напиток", value: "Matcha Latte" }] },
-	7: { name: "Роман", role: "[ 08 YRS ] · Барбер", desc: "Роман — геометр бороды. Он видит симметрию там, где другие видят хаос. Моделирование бороды — это наука, и Роман её знает в совершенстве.", stats: [{ label: "Специализация", value: "Моделирование бороды" }, { label: "Опыт", value: "8 лет" }, { label: "Клиентов", value: "2400+" }, { label: "Напиток", value: "Black Coffee" }] },
-	8: { name: "Кирилл", role: "[ 02 YRS ] · Барбер", desc: "Кирилл — новая кровь. Он знает все тренды TikTok и Instagram. Gen Z стиль, треш-стрижки, эксперименты — это про него.", stats: [{ label: "Специализация", value: "Gen Z, TikTok тренды" }, { label: "Опыт", value: "2 года" }, { label: "Клиентов", value: "600+" }, { label: "Напиток", value: "Energy Drink" }] },
-	9: { name: "Олег", role: "[ 09 YRS ] · Барбер", desc: "Олег — мастер опасного бритья. Он стажировался в легендарных барбершопах Лондона. Его опасная бритва остра как самурайский меч.", stats: [{ label: "Специализация", value: "Опасное бритьё" }, { label: "Опыт", value: "9 лет" }, { label: "Клиентов", value: "2800+" }, { label: "Напиток", value: "Single Malt" }] },
-	10: { name: "Никита", role: "[ 05 YRS ] · Барбер", desc: "Никита — спортсмен. Он работает быстро, чётко, без лишней болтовни. Спортивные стрижки, армейский стиль, дисциплина.", stats: [{ label: "Специализация", value: "Спортивные стрижки" }, { label: "Опыт", value: "5 лет" }, { label: "Клиентов", value: "1600+" }, { label: "Напиток", value: "Protein Shake" }] },
-	11: { name: "Егор", role: "[ 04 YRS ] · Барбер", desc: "Егор — текстурщик. Кудрявые волосы, волнистые, непослушные — он знает, как с ними работать. Его стрижки живут долго и выглядят отлично.", stats: [{ label: "Специализация", value: "Кудрявые волосы, текстуры" }, { label: "Опыт", value: "4 года" }, { label: "Клиентов", value: "1300+" }, { label: "Напиток", value: "Craft Beer" }] },
-	12: { name: "Павел", role: "[ 07 YRS ] · Барбер", desc: "Павел — универсал. Он делает всё: от классики до авангарда. Не знает, что такое «невозможно». Его девиз: «Если клиент хочет — клиент получит».", stats: [{ label: "Специализация", value: "Универсал" }, { label: "Опыт", value: "7 лет" }, { label: "Клиентов", value: "2200+" }, { label: "Напиток", value: "Whiskey Sour" }] },
+	1: { name: "Виктор", role: "[ 10 YRS ] · Старший барбер", desc: "Легенда BRUTAL STYLE.", stats: [{ label: "Специализация", value: "Классика, опасное бритьё" }, { label: "Опыт", value: "10 лет" }, { label: "Клиентов", value: "3200+" }, { label: "Напиток", value: "Jameson" }] },
+	2: { name: "Дмитрий", role: "[ 07 YRS ] · Барбер", desc: "Мастер современных стрижек.", stats: [{ label: "Специализация", value: "Fade, Undercut, Modern" }, { label: "Опыт", value: "7 лет" }, { label: "Клиентов", value: "2100+" }, { label: "Напиток", value: "IPA Beer" }] },
+	3: { name: "Алекс", role: "[ 05 YRS ] · Барбер", desc: "Креативщик. Асимметрия, текстуры.", stats: [{ label: "Специализация", value: "Креатив, текстуры" }, { label: "Опыт", value: "5 лет" }, { label: "Клиентов", value: "1500+" }, { label: "Напиток", value: "Espresso" }] },
+	4: { name: "Макс", role: "[ 04 YRS ] · Барбер", desc: "Мастер терпения. Детские стрижки.", stats: [{ label: "Специализация", value: "Детские стрижки, лёгкий фейд" }, { label: "Опыт", value: "4 года" }, { label: "Клиентов", value: "1200+" }, { label: "Напиток", value: "Coca-Cola" }] },
+	5: { name: "Сергей", role: "[ 06 YRS ] · Барбер", desc: "Перфекционист британской школы.", stats: [{ label: "Специализация", value: "Британская классика" }, { label: "Опыт", value: "6 лет" }, { label: "Клиентов", value: "1800+" }, { label: "Напиток", value: "English Breakfast Tea" }] },
+	6: { name: "Иван", role: "[ 03 YRS ] · Барбер", desc: "Художник. Длинные волосы, окрашивание.", stats: [{ label: "Специализация", value: "Длинные волосы, окрашивание" }, { label: "Опыт", value: "3 года" }, { label: "Клиентов", value: "900+" }, { label: "Напиток", value: "Matcha Latte" }] },
+	7: { name: "Роман", role: "[ 08 YRS ] · Барбер", desc: "Геометр бороды.", stats: [{ label: "Специализация", value: "Моделирование бороды" }, { label: "Опыт", value: "8 лет" }, { label: "Клиентов", value: "2400+" }, { label: "Напиток", value: "Black Coffee" }] },
+	8: { name: "Кирилл", role: "[ 02 YRS ] · Барбер", desc: "Новая кровь. Gen Z стиль.", stats: [{ label: "Специализация", value: "Gen Z, TikTok тренды" }, { label: "Опыт", value: "2 года" }, { label: "Клиентов", value: "600+" }, { label: "Напиток", value: "Energy Drink" }] },
+	9: { name: "Олег", role: "[ 09 YRS ] · Барбер", desc: "Мастер опасного бритья.", stats: [{ label: "Специализация", value: "Опасное бритьё" }, { label: "Опыт", value: "9 лет" }, { label: "Клиентов", value: "2800+" }, { label: "Напиток", value: "Single Malt" }] },
+	10: { name: "Никита", role: "[ 05 YRS ] · Барбер", desc: "Спортсмен. Спортивные стрижки.", stats: [{ label: "Специализация", value: "Спортивные стрижки" }, { label: "Опыт", value: "5 лет" }, { label: "Клиентов", value: "1600+" }, { label: "Напиток", value: "Protein Shake" }] },
+	11: { name: "Егор", role: "[ 04 YRS ] · Барбер", desc: "Текстурщик. Кудрявые волосы.", stats: [{ label: "Специализация", value: "Кудрявые волосы, текстуры" }, { label: "Опыт", value: "4 года" }, { label: "Клиентов", value: "1300+" }, { label: "Напиток", value: "Craft Beer" }] },
+	12: { name: "Павел", role: "[ 07 YRS ] · Барбер", desc: "Универсал.", stats: [{ label: "Специализация", value: "Универсал" }, { label: "Опыт", value: "7 лет" }, { label: "Клиентов", value: "2200+" }, { label: "Напиток", value: "Whiskey Sour" }] },
 };
 
 const clickableMasters = document.querySelectorAll(".member.clickable");
@@ -325,26 +273,19 @@ for (const member of clickableMasters) {
 		const masterEl = /** @type {HTMLElement} */ (member);
 		const masterId = Number.parseInt(masterEl.dataset.master || "0", 10);
 		const data = mastersData[String(masterId)];
-
 		if (!data) return;
 
 		const modalImage = /** @type {HTMLImageElement} */ (document.getElementById("modalImage"));
-		const modalName = /** @type {HTMLElement} */ (document.getElementById("modalName"));
-		const modalRole = /** @type {HTMLElement} */ (document.getElementById("modalRole"));
-		const modalDesc = /** @type {HTMLElement} */ (document.getElementById("modalDesc"));
-		const modalStats = /** @type {HTMLElement} */ (document.getElementById("modalStats"));
-
 		const avatarImg = member.querySelector("img");
 		if (avatarImg) {
 			modalImage.src = avatarImg.src;
 			modalImage.alt = data.name;
 		}
 
-		modalName.textContent = data.name;
-		modalRole.textContent = data.role;
-		modalDesc.textContent = data.desc;
-
-		modalStats.innerHTML = data.stats.map((stat) => `<li><span>${stat.label}</span><span>${stat.value}</span></li>`).join("");
+		/** @type {HTMLElement} */ (document.getElementById("modalName")).textContent = data.name;
+		/** @type {HTMLElement} */ (document.getElementById("modalRole")).textContent = data.role;
+		/** @type {HTMLElement} */ (document.getElementById("modalDesc")).textContent = data.desc;
+		/** @type {HTMLElement} */ (document.getElementById("modalStats")).innerHTML = data.stats.map((stat) => `<li><span>${stat.label}</span><span>${stat.value}</span></li>`).join("");
 
 		masterModal.classList.add("active");
 	});
@@ -360,7 +301,5 @@ masterModal.addEventListener("click", (e) => {
 	if (e.target === masterModal) closeMasterModalFunc();
 });
 document.addEventListener("keydown", (e) => {
-	if (e.key === "Escape" && masterModal.classList.contains("active")) {
-		closeMasterModalFunc();
-	}
+	if (e.key === "Escape" && masterModal.classList.contains("active")) closeMasterModalFunc();
 });
