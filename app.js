@@ -160,31 +160,35 @@ bookingForm.addEventListener("submit", async (e) => {
 	/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
 });
 
-/* ========== TELEGRAM MINI APP INIT (В КОНЦЕ, КОГДА ВСЁ ЗАГРУЖЕНО) ========== */
+/* ========== TELEGRAM MINI APP INIT ========== */
 if (window.Telegram && window.Telegram.WebApp) {
-	const tg = window.Telegram.WebApp;
-	tg.ready();
-	tg.expand();
+  const tg = window.Telegram.WebApp;
+  
+  // 1. СРАЗУ говорим Telegram, что приложение готово (убирает спиннер загрузки!)
+  tg.ready(); 
+  
+  // 2. Разворачиваем на весь экран
+  tg.expand();
 
-	if (tg.themeParams.bg_color) {
-		document.body.style.backgroundColor = tg.themeParams.bg_color;
-	}
+  if (tg.themeParams.bg_color) {
+    document.body.style.backgroundColor = tg.themeParams.bg_color;
+  }
 
-	const nameInput = /** @type {HTMLInputElement} */ (document.getElementById('form-name'));
-	if (tg.initDataUnsafe?.user?.first_name && nameInput) {
-		nameInput.value = tg.initDataUnsafe.user.first_name;
-		nameInput.readOnly = true;
-	}
+  const nameInput = /** @type {HTMLInputElement} */ (document.getElementById('form-name'));
+  if (tg.initDataUnsafe?.user?.first_name && nameInput) {
+    nameInput.value = tg.initDataUnsafe.user.first_name;
+    nameInput.readOnly = true;
+  }
 
-	tg.MainButton.setText('ЗАПИСАТЬСЯ НА СТРИЖКУ');
-	tg.MainButton.setTextColor('#ffffff');
-	tg.MainButton.setColor('#ff0000');
-	tg.MainButton.hide(); // Скрыта по умолчанию
+  tg.MainButton.setText('ЗАПИСАТЬСЯ НА СТРИЖКУ');
+  tg.MainButton.setTextColor('#ffffff');
+  tg.MainButton.setColor('#ff0000');
+  tg.MainButton.hide();
 
-	tg.MainButton.onClick(() => {
-		const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
-		if (submitBtn) submitBtn.click();
-	});
+  tg.MainButton.onClick(() => {
+    const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
+    if (submitBtn) submitBtn.click();
+  });
 }
 
 /* ========== ПРОГРЕСС-БАР СКРОЛЛА ========== */
