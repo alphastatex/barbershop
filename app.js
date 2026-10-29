@@ -1,8 +1,6 @@
 // @ts-check
 import { formatPhone } from "./utils.js";
 
-const TG_CHAT_ID = '5641970486';
-
 /* ========== КУРСОР ========== */
 const cursor = /** @type {HTMLElement} */ (document.getElementById("scissorsCursor"));
 let mx = 0, my = 0, cx = 0, cy = 0;
@@ -114,50 +112,67 @@ if (phoneInput) {
  * @param {{name: string, phone: string, service: string, master: string, comment: string}} data
  */
 async function sendBookingToTelegram(data) {
-	const text = `
-🔥 <b>НОВАЯ ЗАЯВКА — BRUTAL STYLE</b>
-
-👤 <b>Имя:</b> ${data.name}
-📞 <b>Телефон:</b> ${data.phone}
-✂️ <b>Услуга:</b> ${data.service || '—'}
-💈 <b>Мастер:</b> ${data.master || '—'}
-💬 <b>Комментарий:</b> ${data.comment || '—'}
-
-📅 ${new Date().toLocaleString('ru-RU')}
-  `.trim();
+	const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
 
 	try {
-		const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
-		const res = await fetch(`${PROXY_URL}/sendMessage`, {
+		const res = await fetch(`${PROXY_URL}/`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: 'HTML' }),
+			body: JSON.stringify({
+				name: data.name,
+				phone: data.phone,
+				service: data.service,
+				master: data.master,
+				comment: data.comment,
+				initData: window.Telegram?.WebApp?.initData || ""
+			}),
 		});
-		if (!res.ok) console.error('TG API error:', await res.text());
-		else console.log('✅ Заявка отправлена в Telegram');
+
+		if (!res.ok) {
+			const errData = await res.json().catch(() => ({}));
+			throw new Error(errData.error || 'Ошибка отправки');
+		}
+		
+		console.log('✅ Заявка успешно отправлена');
+		return true; 
 	} catch (error) {
-		console.error('❌ Не удалось отправить в Telegram:', error);
+		console.error('❌ Не удалось отправить:', error);
+		return false;
 	}
 }
 
 bookingForm.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	
+	// Блокируем кнопку отправки, чтобы пользователь не нажал её дважды
+	const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
+	if (submitBtn) submitBtn.disabled = true;
+
 	const data = {
 		name: /** @type {HTMLInputElement} */ (document.getElementById("form-name")).value,
 		phone: phoneInput.value,
 		service: /** @type {HTMLSelectElement} */ (document.getElementById("form-service")).value,
 		master: /** @type {HTMLSelectElement} */ (document.getElementById("form-master")).value,
 		comment: /** @type {HTMLTextAreaElement} */ (document.getElementById("form-comment")).value,
-		date: new Date().toISOString(),
 	};
 
-	console.log("Заявка:", data);
-	await sendBookingToTelegram(data);
+	console.log("Отправляем заявку:", data);
+	
+	// Ждем ответа от сервера (true, если успешно, false, если ошибка)
+	const isSuccess = await sendBookingToTelegram(data);
 
-	bookingForm.style.display = "none";
-	/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
-	/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
+	if (isSuccess) {
+		// Показываем успех ТОЛЬКО если сервер ответил 200 OK
+		bookingForm.style.display = "none";
+		/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
+		/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
+	} else {
+		// Если ошибка — показываем сообщение и НЕ скрываем форму
+		alert("Не удалось отправить заявку. Проверьте интернет или попробуйте позже.");
+	}
+
+	// Разблокируем кнопку обратно
+	if (submitBtn) submitBtn.disabled = false;
 });
 
 /* ========== TELEGRAM MINI APP INIT ========== */
