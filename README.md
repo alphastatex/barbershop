@@ -16,14 +16,19 @@
 | :----------------------------: | :----------------------------------: |
 | ![Mini App](docs/mini-app.png) | ![Заявка](docs/telegram-message.png) |
 
-## 🏗 Архитектура
+## 🏗 Архитектура и Безопасность
 
-### Почему Cloudflare Worker?
+Проект использует связку **GitHub Pages (Frontend)** + **Cloudflare Workers (Backend)**.
 
-- 🔒 **Токен бота не виден в коде** — он живёт на сервере Cloudflare
-- 🌍 **Обход блокировок РКН** — запросы идут через серверы Cloudflare
-- ⚡ **Бесплатно** — до 100,000 запросов в день
-- 🚀 **Быстро** — edge-серверы по всему миру
+### 🛡️ Почему это безопасно? (Zero Trust)
+
+Ранее проект использовал открытый прокси, что позволяло любому желающему спамить сообщениями от имени бота. Теперь архитектура построена по принципу **Zero Trust**:
+
+1. **Никаких секретов на клиенте**: Токен бота (`BOT_TOKEN`) и ID чата (`ADMIN_CHAT_ID`) хранятся в зашифрованных секретах Cloudflare (`wrangler secret`). В коде фронтенда их нет.
+2. **Валидация `initData`**: Cloudflare Worker проверяет криптографическую подпись (HMAC-SHA256), которую генерирует Telegram. Заявка пройдет, только если она отправлена реальным пользователем изнутри Mini App.
+3. **Защита от XSS**: Сервер экранирует HTML-теги во всех полях ввода (имя, комментарий) перед отправкой в Telegram.
+4. **Формирование текста на сервере**: Клиент отправляет только сырые данные, а Worker сам собирает красивое сообщение и отправляет его на жестко заданный ID админа (клиент не может подменить получателя).
+5. **Обход блокировок РКН**: Домен `api.telegram.org` заблокирован в РФ. Cloudflare Worker выступает прокси — запросы идут через edge-серверы Cloudflare, которые не заблокированы.
 
 ---
 
@@ -35,31 +40,25 @@
 - 👤 **Имя пользователя подставляется автоматически** из Telegram-профиля
 - 🔴 Нативная кнопка **MainButton** внизу экрана Telegram
 - 🎨 Адаптируется под тёмную/светлую тему пользователя
-- ⚡ Мгновенная загрузка (SDK инжектится самим Telegram)
+- ⚡ Мгновенная загрузка
 
-### Как это работает:
+### 🔧 Обход блокировки SDK
 
-1. Пользователь открывает бота и нажимает "Открыть барбершоп"
-2. Telegram открывает сайт в своём встроенном браузере
-3. SDK Telegram автоматически подставляется в страницу
-4. Код в `app.js` определяет среду через `window.Telegram.WebApp`
-5. Имя берётся из `tg.initDataUnsafe.user.first_name`
-6. Главная кнопка Telegram привязывается к отправке формы
+Так как домен `telegram.org` в РФ часто недоступен, мы **не используем CDN Telegram**. Файл `telegram-web-app.js` установлен локально через npm (`@twa-dev/sdk`) и подключен в `index.html` как локальный скрипт. Это гарантирует, что Mini App загрузится и получит валидный `initData` даже при жестких блокировках.
 
 ---
 
 ## 🛠 Стек технологий
 
-| Категория          | Технологии                                          |
-| ------------------ | --------------------------------------------------- |
-| **Frontend**       | HTML5, CSS3, Vanilla JavaScript                     |
-| **Типизация**      | TypeScript через JSDoc (`@ts-check`) + `types.d.ts` |
-| **Тесты**          | Vitest (юнит) + Playwright (E2E)                    |
-| **Линтинг**        | Biome                                               |
-| **Форматирование** | Prettier                                            |
-| **Деплой**         | GitHub Pages                                        |
-| **Бэкенд**         | Cloudflare Workers (прокси)                         |
-| **API**            | Telegram Bot API + Telegram Web App SDK             |
+| Категория     | Технологии                                          |
+| ------------- | --------------------------------------------------- |
+| **Frontend**  | HTML5, CSS3, Vanilla JavaScript                     |
+| **Типизация** | TypeScript через JSDoc (`@ts-check`) + `types.d.ts` |
+| **Бэкенд**    | Cloudflare Workers (прокси + валидация)             |
+| **Тесты**     | Vitest (юнит) + Playwright (E2E)                    |
+| **Линтинг**   | Biome                                               |
+| **Деплой**    | GitHub Pages (статика) + Wrangler (воркер)          |
+| **API**       | Telegram Bot API + Telegram Web App SDK             |
 
 ---
 
@@ -81,7 +80,7 @@
   - Маской телефона `+7 (XXX) XXX-XX-XX`
   - Валидацией всех полей
   - Выбором услуги и мастера
-- **Telegram-уведомления** — заявка приходит мгновенно
+- **Telegram-уведомления** — заявка приходит мгновенно (с юзернеймом клиента)
 - **Mini App** — сайт работает внутри Telegram
 
 ### 🧪 Качество кода
@@ -94,27 +93,37 @@
 
 ---
 
-## 🔑 Ключевые решения
+## 📂 Структура проекта
 
-### 1. Безопасное хранение токена
-
-Токен бота **никогда не попадает в репозиторий**. Он хранится в Cloudflare Worker, а фронтенд общается только с прокси-URL.
-
-### 2. Обход блокировок РКН
-
-Домен `api.telegram.org` заблокирован в РФ. Cloudflare Worker выступает прокси — запросы идут через серверы Cloudflare, которые не заблокированы.
-
-### 3. Динамическая загрузка Telegram SDK
-
-SDK не подключается через `<script>` (это вызвало бы таймаут в РФ). Вместо этого код проверяет `window.Telegram` — если сайт открыт внутри Telegram, SDK уже там (Telegram инжектит его сам).
-
-### 4. Типизация без TypeScript
-
-Использован `@ts-check` + `types.d.ts` вместо полноценного TS-проекта. Это даёт проверку типов без необходимости компиляции.
+```text
+barbershop/
+├── index.html              # Разметка (подключение локального SDK)
+├── styles.css              # Стили (брутализм)
+├── app.js                  # Логика фронтенда + Telegram Mini App
+├── telegram-web-app.js     # Локальная копия SDK Telegram (обход блокировок)
+├── utils.js                # Чистые функции (маска телефона)
+├── utils.test.js           # Юнит-тесты
+├── types.d.ts              # Типы для Telegram Web App SDK
+├── tsconfig.json           # Конфиг TypeScript для JSDoc
+├── tests/
+│   └── smoke.spec.js       # E2E-тесты Playwright
+├── docs/                   # Скриншоты для README
+├── biome.json              # Конфиг линтера
+├── vitest.config.js        # Конфиг Vitest
+├── playwright.config.js    # Конфиг Playwright
+├── package.json
+└── tg-barbershop-proxy/    # Бэкенд (Cloudflare Worker)
+    ├── src/
+    │   └── worker.js       # Логика валидации initData и отправки в TG
+    ├── wrangler.jsonc      # Конфиг воркера
+    └── package.json
+```
 
 ---
 
 ## 🚀 Быстрый старт
+
+### 1. Фронтенд (Локально)
 
 ```bash
 # Клонировать репозиторий
@@ -133,25 +142,33 @@ npm run e2e       # Playwright
 
 # Линтинг
 npx @biomejs/biome check .
-barbershop/
-├── index.html              # Разметка
-├── styles.css              # Стили (брутализм)
-├── app.js                  # Основная логика + Telegram Mini App
-├── utils.js                # Чистые функции (маска телефона)
-├── utils.test.js           # Юнит-тесты
-├── types.d.ts              # Типы для Telegram Web App SDK
-├── tsconfig.json           # Конфиг TypeScript для JSDoc
-├── tests/
-│   └── smoke.spec.js       # E2E-тесты Playwright
-── docs/                   # Скриншоты для README
-├── biome.json              # Конфиг линтера
-├── vitest.config.js        # Конфиг Vitest
-├── playwright.config.js    # Конфиг Playwright
-└── package.json
-Полезные ссылки
-Live Demo: https://alphastatex.github.io/barbershop/
-Cloudflare Worker: https://tg-barbershop-proxy.alphastatex.workers.dev
-Документация Telegram Web App: https://core.telegram.org/bots/webapps
-Документация Cloudflare Workers: https://developers.cloudflare.com/workers/
-MIT © 2026 alphastatex
 ```
+
+### 2. Бэкенд (Cloudflare Worker)
+
+Для деплоя воркера вам понадобится аккаунт Cloudflare и Wrangler CLI.
+
+```bash
+cd tg-barbershop-proxy
+
+# Авторизация в Cloudflare
+npx wrangler login
+
+# Добавление секретов (Токен бота и ID чата)
+npx wrangler secret put BOT_TOKEN
+npx wrangler secret put ADMIN_CHAT_ID
+
+# Деплой воркера в облако
+npx wrangler deploy
+```
+
+---
+
+## 🔗 Полезные ссылки
+
+- **Live Demo:** https://alphastatex.github.io/barbershop/
+- **Cloudflare Worker:** https://tg-barbershop-proxy.alphastatex.workers.dev
+- **Документация Telegram Web App:** https://core.telegram.org/bots/webapps
+- **Документация Cloudflare Workers:** https://developers.cloudflare.com/workers/
+
+MIT © 2026 alphastatex
