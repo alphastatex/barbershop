@@ -69,18 +69,15 @@ for (const el of formElements) {
 openBtn.addEventListener("click", () => {
 	modal.classList.add("active");
 	hideCursor();
-	// Показываем кнопку Telegram при открытии модалки
 	if (window.Telegram?.WebApp?.MainButton) {
 		window.Telegram.WebApp.MainButton.show();
 	}
 });
 
 function closeModal() {
-	// Скрываем кнопку Telegram при закрытии модалки
 	if (window.Telegram?.WebApp?.MainButton) {
 		window.Telegram.WebApp.MainButton.hide();
 	}
-	
 	modal.classList.remove("active");
 	showCursor();
 	setTimeout(() => {
@@ -109,7 +106,6 @@ if (phoneInput) {
 
 /**
  * Отправляет данные бронирования в Telegram через Cloudflare Proxy
- * @param {{name: string, phone: string, service: string, master: string, comment: string}} data
  */
 async function sendBookingToTelegram(data) {
 	const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
@@ -136,6 +132,8 @@ async function sendBookingToTelegram(data) {
 		console.log('✅ Заявка успешно отправлена');
 		return true; 
 	} catch (error) {
+		// ВРЕМЕННО: Показываем ошибку прямо на экране для отладки
+		alert("ОШИБКА: " + error.message);
 		console.error('❌ Не удалось отправить:', error);
 		return false;
 	}
@@ -144,7 +142,6 @@ async function sendBookingToTelegram(data) {
 bookingForm.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	
-	// Блокируем кнопку отправки, чтобы пользователь не нажал её дважды
 	const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
 	if (submitBtn) submitBtn.disabled = true;
 
@@ -158,20 +155,17 @@ bookingForm.addEventListener("submit", async (e) => {
 
 	console.log("Отправляем заявку:", data);
 	
-	// Ждем ответа от сервера (true, если успешно, false, если ошибка)
 	const isSuccess = await sendBookingToTelegram(data);
 
 	if (isSuccess) {
-		// Показываем успех ТОЛЬКО если сервер ответил 200 OK
 		bookingForm.style.display = "none";
 		/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
 		/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
 	} else {
-		// Если ошибка — показываем сообщение и НЕ скрываем форму
-		alert("Не удалось отправить заявку. Проверьте интернет или попробуйте позже.");
+		// Если ошибка, форма остается на экране
+		console.error("Не удалось отправить заявку.");
 	}
 
-	// Разблокируем кнопку обратно
 	if (submitBtn) submitBtn.disabled = false;
 });
 
@@ -179,10 +173,7 @@ bookingForm.addEventListener("submit", async (e) => {
 if (window.Telegram && window.Telegram.WebApp) {
   const tg = window.Telegram.WebApp;
   
-  // 1. СРАЗУ говорим Telegram, что приложение готово (убирает спиннер загрузки!)
   tg.ready(); 
-  
-  // 2. Разворачиваем на весь экран
   tg.expand();
 
   if (tg.themeParams.bg_color) {
