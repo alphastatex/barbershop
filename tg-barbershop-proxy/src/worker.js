@@ -1,6 +1,6 @@
 // worker.js
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     // 1. Обработка CORS (чтобы браузер разрешал запросы с твоего сайта)
     if (request.method === "OPTIONS") {
       return new Response(null, {
@@ -19,7 +19,40 @@ export default {
 
     try {
       const data = await request.json();
+
+      // === ПРОВЕРКА CLOUDFLARE TURNSTILE ===
+      const turnstileToken = data.turnstileToken;
       
+      if (!turnstileToken) {
+        return new Response(JSON.stringify({ error: 'Отсутствует токен капчи. Вы робот?' }), { 
+          status: 400, 
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+        });
+      }
+
+      const turnstileFormData = new FormData();
+      turnstileFormData.append('secret', env.TURNSTILE_SECRET);
+      turnstileFormData.append('response', turnstileToken);
+      
+      const ip = request.headers.get('CF-Connecting-IP');
+      if (ip) turnstileFormData.append('remoteip', ip);
+
+      const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: turnstileFormData,
+      });
+
+      const turnstileOutcome = await turnstileResponse.json();
+
+      if (!turnstileOutcome.success) {
+        console.error("Turnstile validation failed:", turnstileOutcome['error-codes']);
+        return new Response(JSON.stringify({ error: 'Не пройдена проверка на робота' }), { 
+          status: 403, 
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+        });
+      }
+      // =====================================
+
       // По умолчанию считаем, что заявка из браузера
       let username = "🌐 Из браузера (без Telegram)";
 

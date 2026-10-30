@@ -120,6 +120,7 @@ async function sendBookingToTelegram(data) {
 				service: data.service,
 				master: data.master,
 				comment: data.comment,
+				turnstileToken: data.turnstileToken, // <--- ДОБАВЛЕНО
 				initData: window.Telegram?.WebApp?.initData || ""
 			}),
 		});
@@ -133,8 +134,9 @@ async function sendBookingToTelegram(data) {
 		return true; 
 	} catch (error) {
 		// ВРЕМЕННО: Показываем ошибку прямо на экране для отладки
-		alert("ОШИБКА: " + error.message);
-		console.error('❌ Не удалось отправить:', error);
+		const err = /** @type {Error} */ (error);
+		alert("ОШИБКА: " + err.message);
+		console.error('❌ Не удалось отправить:', err);
 		return false;
 	}
 }
@@ -143,8 +145,7 @@ bookingForm.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	
 	const submitBtn = /** @type {HTMLButtonElement} */ (bookingForm.querySelector('button[type="submit"]'));
-	if (submitBtn) submitBtn.disabled = true;
-
+	
 	const data = {
 		name: /** @type {HTMLInputElement} */ (document.getElementById("form-name")).value,
 		phone: phoneInput.value,
@@ -153,14 +154,29 @@ bookingForm.addEventListener("submit", async (e) => {
 		comment: /** @type {HTMLTextAreaElement} */ (document.getElementById("form-comment")).value,
 	};
 
-	console.log("Отправляем заявку:", data);
+	// Получаем токен от Cloudflare Turnstile
+	const turnstileResponse = /** @type {HTMLInputElement | null} */ (document.querySelector('[name="cf-turnstile-response"]'));
+	const turnstileToken = turnstileResponse ? turnstileResponse.value : "";
+
+	if (!turnstileToken) {
+		alert("Пожалуйста, подтвердите, что вы не робот (поставьте галочку).");
+		return;
+	}
+
+	if (submitBtn) submitBtn.disabled = true;
+	console.log("Отправляем заявку:", { ...data, turnstileToken: "***" });
 	
-	const isSuccess = await sendBookingToTelegram(data);
+	const isSuccess = await sendBookingToTelegram({ ...data, turnstileToken: turnstileToken });
 
 	if (isSuccess) {
 		bookingForm.style.display = "none";
 		/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
 		/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
+		
+		// Сбрасываем капчу для следующей заявки
+		const win = /** @type {any} */ (window);
+		if (win.turnstile) win.turnstile.reset();
+
 	} else {
 		// Если ошибка, форма остается на экране
 		console.error("Не удалось отправить заявку.");

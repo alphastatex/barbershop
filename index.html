@@ -7,7 +7,7 @@
   <title>BRUTAL STYLE — Барбершоп с характером</title>
   
   <!-- SEO и Meta-теги -->
-  <meta name="description" content="BRUTAL STYLE — барбершоп в Москве. 12 мастеров, опасное бритьё, атмосфера байкерского гаража. Запись онлайн.">
+  <meta name="description" content="BRUTAL STYLE — барбершоп в Москве. 12 мастеров, опасное бритье, атмосфера байкерского гаража. Запись онлайн.">
   <meta property="og:title" content="BRUTAL STYLE — Барбершоп с характером">
   <meta property="og:description" content="EST. 2026 / MOSCOW. 12 мастеров. Никаких компромиссов.">
   <meta property="og:type" content="website">
@@ -37,6 +37,9 @@
   
   <!-- Внешние стили -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Cloudflare Turnstile API -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -367,6 +370,10 @@
           <label for="form-comment">Комментарий</label>
           <textarea id="form-comment" placeholder="Пожелания, время, особенности..."></textarea>
         </div>
+
+        <!-- CLOUDFLARE TURNSTILE WIDGET (DARK THEME) -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFtQkmeKiGCut-Z7" data-theme="dark" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
+
         <button type="submit" class="submit-btn">ОТПРАВИТЬ ЗАЯВКУ →</button>
       </form>
 
@@ -404,6 +411,6 @@
   </footer>
 
   <script src="./telegram-web-app.js"></script>
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>
