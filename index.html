@@ -6,16 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BRUTAL STYLE — Барбершоп с характером</title>
   
-  <!-- SEO и Meta-теги -->
   <meta name="description" content="BRUTAL STYLE — барбершоп в Москве. 12 мастеров, опасное бритье, атмосфера байкерского гаража. Запись онлайн.">
   <meta property="og:title" content="BRUTAL STYLE — Барбершоп с характером">
   <meta property="og:description" content="EST. 2026 / MOSCOW. 12 мастеров. Никаких компромиссов.">
   <meta property="og:type" content="website">
 
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='22' fill='%23000000'/%3E%3Cpath d='M24 24 L40 10 L38 13 L24 25 Z' fill='%23d4121e'/%3E%3Cpath d='M24 24 L40 38 L38 35 L24 23 Z' fill='%23d4121e'/%3E%3Ccircle cx='24' cy='24' r='3' fill='%23f5f5f0'/%3E%3C/svg%3E">
 
-  <!-- Schema.org -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -30,26 +27,19 @@
   }
   </script>
 
-  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   
-  <!-- Внешние стили -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Cloudflare Turnstile API -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
-  <!-- Прогресс-бар скролла -->
   <div class="scroll-progress" id="scrollProgress"></div>
-
-  <!-- Кнопка "Наверх" -->
   <button class="scroll-top" id="scrollTop" aria-label="Наверх">↑</button>
 
-  <!-- Курсор-ножницы -->
   <svg class="scissors-cursor" id="scissorsCursor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <g class="blade-top">
       <path d="M24 24 L44 8 L42 12 L24 26 Z" fill="#f5f5f0" stroke="#0a0a0a" stroke-width="0.8"/>
@@ -76,20 +66,53 @@
       <div class="hero-tag">BARBERSHOP / EST. 2026 / MOSCOW</div>
       <h1 class="hero-title">BRUTAL<br>STYLE</h1>
       <div class="hero-sub">26</div>
+      
       <a href="#booking" class="hero-cta">Записаться →</a>
+      
+      <div class="hero-social-proof reveal reveal-delay-2">
+        <span class="stars">★★★★★</span>
+        <span class="rating">4.9</span>
+        <span class="divider">·</span>
+        <span class="reviews">200+ отзывов</span>
+      </div>
+      
     </div>
     <div class="mark-26">26</div>
   </section>
 
-  <!-- TICKER 1 -->
-  <div class="ticker">
-    <div class="ticker-track">
-      <span>BRUTAL STYLE</span><span>✦</span><span>BARBERSHOP</span><span>✦</span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span>✦</span>
-      <span>BRUTAL STYLE</span><span>✦</span><span>BARBERSHOP</span><span>✦</span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span>✦</span>
-      <span>BRUTAL STYLE</span><span>✦</span><span>BARBERSHOP</span><span>✦</span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span></span>
-      <span>BRUTAL STYLE</span><span>✦</span><span>BARBERSHOP</span><span>✦</span><span>EST. 2026</span><span>✦</span><span>MOSCOW</span><span>✦</span>
+  <!-- BENTO SECTION -->
+  <section class="bento-section">
+    <div class="bento-grid reveal">
+      
+      <div class="bento-item bento-media">
+        <video autoplay muted loop playsinline preload="auto">
+          <source src="hero-bg.mp4" type="video/mp4">
+        </video>
+        <div class="bento-media-overlay">
+          <span class="bento-media-tag">THE VIBE</span>
+        </div>
+      </div>
+
+      <div class="bento-item bento-stat">
+        <div class="bento-stat-num">8000+</div>
+        <div class="bento-stat-label">Довольных клиентов</div>
+      </div>
+
+      <div class="bento-item bento-review">
+        <p class="bento-review-text">"Лучший фейд в Москве. Без лишних слов. Пришел как лох, вышел как босс."</p>
+        <span class="bento-review-author">— Дмитрий</span>
+      </div>
+
+      <a href="#booking" class="bento-item bento-cta">
+        <div class="bento-cta-content">
+          <span class="bento-cta-tag">БЛИЖАЙШЕЕ ОКНО</span>
+          <span class="bento-cta-time">СЕГОДНЯ 18:00</span>
+          <span class="bento-cta-arrow">→</span>
+        </div>
+      </a>
+
     </div>
-  </div>
+  </section>
 
   <!-- MANIFESTO -->
   <section class="manifesto reveal">
@@ -164,15 +187,46 @@
     </div>
   </section>
 
-  <!-- TICKER 2 -->
-  <div class="ticker ticker-secondary">
-    <div class="ticker-track">
-      <span>HAIRCUT</span><span>✦</span><span>BEARD</span><span>✦</span><span>SHAVE</span><span>✦</span><span>STYLE</span><span></span>
-      <span>HAIRCUT</span><span>✦</span><span>BEARD</span><span>✦</span><span>SHAVE</span><span>✦</span><span>STYLE</span><span>✦</span>
-      <span>HAIRCUT</span><span>✦</span><span>BEARD</span><span>✦</span><span>SHAVE</span><span>✦</span><span>STYLE</span><span>✦</span>
-      <span>HAIRCUT</span><span>✦</span><span>BEARD</span><span>✦</span><span>SHAVE</span><span>✦</span><span>STYLE</span><span>✦</span>
+  <!-- KINETIC RIBBON -->
+  <section class="kinetic-ribbon" id="kinetic-ribbon">
+    <div class="kinetic-track" id="kinetic-track">
+      <span class="kinetic-item">NO COMPROMISES</span>
+      
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
+
+      <span class="kinetic-item">REAL BARBERS</span>
+      
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
+
+      <span class="kinetic-item">DANGEROUS SHAVES</span>
+
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
+
+      <span class="kinetic-item">SINCE 2026</span>
+
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
+
+      <span class="kinetic-item">NO APOLOGIES</span>
+      
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
+
+      <span class="kinetic-item">MOSCOW</span>
+
+      <span class="kinetic-sep">
+        <img src="images/razor.webp" alt="Razor" class="razor-img">
+      </span>
     </div>
-  </div>
+  </section>
 
   <!-- TEAM -->
   <section class="section" id="team">
@@ -182,112 +236,78 @@
     </div>
     <p class="section-sub reveal">Не просто барберы. Это люди с характером, которые живут своим делом. Кликни на карточку, чтобы узнать больше.</p>
 
+    <!-- ЕДИНАЯ СЕТКА ДЛЯ ВСЕХ 12 МАСТЕРОВ -->
     <div class="team-grid">
       <div class="member reveal reveal-delay-1 clickable" data-master="1">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-1.png" alt="Виктор">
-        </div>
+        <div class="member-avatar"><img src="images/barbers/barber-1.png" alt="Виктор"></div>
         <div class="member-name">Виктор</div>
         <span class="member-role">[ 10 YRS ] · Старший барбер</span>
         <p class="member-desc">Классика и опасное бритьё. Работает с опасной бритвой как хирург.</p>
       </div>
-      
       <div class="member reveal reveal-delay-2 clickable" data-master="2">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-2.png" alt="Дмитрий">
-        </div>
+        <div class="member-avatar"><img src="images/barbers/barber-2.png" alt="Дмитрий"></div>
         <div class="member-name">Дмитрий</div>
         <span class="member-role">[ 07 YRS ] · Барбер</span>
         <p class="member-desc">Современные стрижки и работа с бородой. Знает все тренды и классические техники.</p>
       </div>
-      
       <div class="member reveal reveal-delay-3 clickable" data-master="3">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-3.png" alt="Алекс">
-        </div>
+        <div class="member-avatar"><img src="images/barbers/barber-3.png" alt="Алекс"></div>
         <div class="member-name">Алекс</div>
         <span class="member-role">[ 05 YRS ] · Барбер</span>
         <p class="member-desc">Эксперт по фейду и креативным стрижкам. Делает то, что другие не берутся.</p>
       </div>
-    </div>
 
-    <div class="team-grid team-extra" id="extra-team">
-      <div class="member clickable" data-master="4">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-4.png" alt="Макс">
-        </div>
+      <!-- МАСТЕРА 4-12 (СКРЫТЫ ДО КЛИКА) -->
+      <div class="member clickable extra-member hidden" data-master="4">
+        <div class="member-avatar"><img src="images/barbers/barber-4.png" alt="Макс"></div>
         <div class="member-name">Макс</div>
         <span class="member-role">[ 04 YRS ]</span>
         <p class="member-desc">Специалист по детским стрижкам и легкому фейду.</p>
       </div>
-      
-      <div class="member clickable" data-master="5">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-5.png" alt="Сергей">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="5">
+        <div class="member-avatar"><img src="images/barbers/barber-5.png" alt="Сергей"></div>
         <div class="member-name">Сергей</div>
         <span class="member-role">[ 06 YRS ]</span>
         <p class="member-desc">Классические британские стрижки. Педантичность.</p>
       </div>
-      
-      <div class="member clickable" data-master="6">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-6.png" alt="Иван">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="6">
+        <div class="member-avatar"><img src="images/barbers/barber-6.png" alt="Иван"></div>
         <div class="member-name">Иван</div>
         <span class="member-role">[ 03 YRS ]</span>
         <p class="member-desc">Креатив, окрашивание, работа с длинными волосами.</p>
       </div>
-      
-      <div class="member clickable" data-master="7">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-7.png" alt="Роман">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="7">
+        <div class="member-avatar"><img src="images/barbers/barber-7.png" alt="Роман"></div>
         <div class="member-name">Роман</div>
         <span class="member-role">[ 08 YRS ]</span>
         <p class="member-desc">Моделирование бороды. Геометрия и симметрия.</p>
       </div>
-      
-      <div class="member clickable" data-master="8">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-8.png" alt="Кирилл">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="8">
+        <div class="member-avatar"><img src="images/barbers/barber-8.png" alt="Кирилл"></div>
         <div class="member-name">Кирилл</div>
         <span class="member-role">[ 02 YRS ]</span>
         <p class="member-desc">Новая кровь. Тренды TikTok и Gen Z стиль.</p>
       </div>
-      
-      <div class="member clickable" data-master="9">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-9.png" alt="Олег">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="9">
+        <div class="member-avatar"><img src="images/barbers/barber-9.png" alt="Олег"></div>
         <div class="member-name">Олег</div>
         <span class="member-role">[ 09 YRS ]</span>
         <p class="member-desc">Опасное бритьё. Стажировка в Лондоне.</p>
       </div>
-      
-      <div class="member clickable" data-master="10">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-10.png" alt="Никита">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="10">
+        <div class="member-avatar"><img src="images/barbers/barber-10.png" alt="Никита"></div>
         <div class="member-name">Никита</div>
         <span class="member-role">[ 05 YRS ]</span>
         <p class="member-desc">Спортивные стрижки. Быстро, четко, без лишнего.</p>
       </div>
-      
-      <div class="member clickable" data-master="11">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-11.png" alt="Егор">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="11">
+        <div class="member-avatar"><img src="images/barbers/barber-11.png" alt="Егор"></div>
         <div class="member-name">Егор</div>
         <span class="member-role">[ 04 YRS ]</span>
         <p class="member-desc">Текстурные стрижки. Работа с кудрявыми волосами.</p>
       </div>
-      
-      <div class="member clickable" data-master="12">
-        <div class="member-avatar">
-          <img src="images/barbers/barber-12.png" alt="Павел">
-        </div>
+      <div class="member clickable extra-member hidden" data-master="12">
+        <div class="member-avatar"><img src="images/barbers/barber-12.png" alt="Павел"></div>
         <div class="member-name">Павел</div>
         <span class="member-role">[ 07 YRS ]</span>
         <p class="member-desc">Универсал. Делает всё, от классики до авангарда.</p>
@@ -297,10 +317,9 @@
     <button class="toggle-team-btn" id="toggle-team">[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]</button>
   </section>
 
-  <!-- MODAL FOR MASTERS -->
   <div class="master-modal-overlay" id="masterModal">
     <div class="master-modal-content">
-      <button class="master-modal-close" id="closeMasterModal" aria-label="Закрыть"></button>
+      <button class="master-modal-close" id="closeMasterModal" aria-label="Закрыть">✕</button>
       <img class="master-modal-image" id="modalImage" src="" alt="">
       <div class="master-modal-info">
         <h2 class="master-modal-name" id="modalName"></h2>
@@ -314,7 +333,6 @@
     </div>
   </div>
 
-  <!-- BOOKING -->
   <section class="section" id="booking">
     <div class="section-head reveal">
       <span class="section-num">[ 03 / BOOKING ]</span>
@@ -323,7 +341,6 @@
     <button class="open-booking-btn reveal" id="open-booking">ЗАПИСАТЬСЯ НА СТРИЖКУ</button>
   </section>
 
-  <!-- МОДАЛКА БРОНИРОВАНИЯ -->
   <div class="modal-overlay" id="booking-modal">
     <div class="modal-content">
       <button class="close-modal" id="close-booking" aria-label="Закрыть">✕</button>
@@ -371,7 +388,6 @@
           <textarea id="form-comment" placeholder="Пожелания, время, особенности..."></textarea>
         </div>
 
-        <!-- CLOUDFLARE TURNSTILE WIDGET (DARK THEME) -->
         <div class="cf-turnstile" data-sitekey="0x4AAAAAAFtQkmeKiGCut-Z7" data-theme="dark" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
 
         <button type="submit" class="submit-btn">ОТПРАВИТЬ ЗАЯВКУ →</button>
@@ -384,7 +400,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-grid">
       <div class="footer-col">
@@ -410,7 +425,10 @@
     <div class="footer-bottom">© 2026 BRUTAL STYLE · DESIGNED WITH ✦ IN MOSCOW</div>
   </footer>
 
+  <script src="libs/gsap.min.js"></script>
+  <script src="libs/ScrollTrigger.min.js"></script>
+
   <script src="./telegram-web-app.js"></script>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=10"></script>
 </body>
 </html>

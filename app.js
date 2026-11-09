@@ -104,9 +104,6 @@ if (phoneInput) {
 	});
 }
 
-/**
- * Отправляет данные бронирования в Telegram через Cloudflare Proxy
- */
 async function sendBookingToTelegram(data) {
 	const PROXY_URL = 'https://tg-barbershop-proxy.alphastatex.workers.dev';
 
@@ -120,7 +117,7 @@ async function sendBookingToTelegram(data) {
 				service: data.service,
 				master: data.master,
 				comment: data.comment,
-				turnstileToken: data.turnstileToken, // <--- ДОБАВЛЕНО
+				turnstileToken: data.turnstileToken,
 				initData: window.Telegram?.WebApp?.initData || ""
 			}),
 		});
@@ -133,7 +130,6 @@ async function sendBookingToTelegram(data) {
 		console.log('✅ Заявка успешно отправлена');
 		return true; 
 	} catch (error) {
-		// ВРЕМЕННО: Показываем ошибку прямо на экране для отладки
 		const err = /** @type {Error} */ (error);
 		alert("ОШИБКА: " + err.message);
 		console.error('❌ Не удалось отправить:', err);
@@ -154,7 +150,6 @@ bookingForm.addEventListener("submit", async (e) => {
 		comment: /** @type {HTMLTextAreaElement} */ (document.getElementById("form-comment")).value,
 	};
 
-	// Получаем токен от Cloudflare Turnstile
 	const turnstileResponse = /** @type {HTMLInputElement | null} */ (document.querySelector('[name="cf-turnstile-response"]'));
 	const turnstileToken = turnstileResponse ? turnstileResponse.value : "";
 
@@ -173,12 +168,10 @@ bookingForm.addEventListener("submit", async (e) => {
 		/** @type {HTMLElement} */ (document.getElementById("modal-title")).textContent = "ГОТОВО";
 		/** @type {HTMLElement} */ (document.getElementById("success-message")).style.display = "block";
 		
-		// Сбрасываем капчу для следующей заявки
 		const win = /** @type {any} */ (window);
 		if (win.turnstile) win.turnstile.reset();
 
 	} else {
-		// Если ошибка, форма остается на экране
 		console.error("Не удалось отправить заявку.");
 	}
 
@@ -264,12 +257,14 @@ for (const el of statNums) statsObs.observe(el);
 
 /* ========== РАСКРЫТИЕ МАСТЕРОВ ========== */
 const toggleBtn = /** @type {HTMLButtonElement} */ (document.getElementById("toggle-team"));
-const extraTeam = /** @type {HTMLElement} */ (document.getElementById("extra-team"));
+const extraMembers = document.querySelectorAll(".extra-member");
 let teamExpanded = false;
 
 toggleBtn.addEventListener("click", () => {
 	teamExpanded = !teamExpanded;
-	extraTeam.classList.toggle("visible", teamExpanded);
+	for (const member of extraMembers) {
+		member.classList.toggle("hidden", !teamExpanded);
+	}
 	toggleBtn.textContent = teamExpanded ? "[ СКРЫТЬ МАСТЕРОВ ↑ ]" : "[ ПОКАЗАТЬ ВСЕХ 12 МАСТЕРОВ ↓ ]";
 });
 
@@ -329,3 +324,29 @@ masterModal.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
 	if (e.key === "Escape" && masterModal.classList.contains("active")) closeMasterModalFunc();
 });
+
+/* ========== KINETIC RIBBON (GSAP ScrollTrigger) ========== */
+const kineticTrack = document.getElementById("kinetic-track");
+
+if (kineticTrack && window.gsap && window.ScrollTrigger) {
+	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	if (!prefersReducedMotion) {
+		gsap.registerPlugin(ScrollTrigger);
+
+		gsap.to(kineticTrack, {
+			x: () => {
+				const maxShift = kineticTrack.scrollWidth - window.innerWidth;
+				return -Math.max(0, maxShift * 0.6);
+			},
+			ease: "none",
+			scrollTrigger: {
+				trigger: "#kinetic-ribbon",
+				start: "top bottom",
+				end: "bottom top",
+				scrub: 1.2,
+				invalidateOnRefresh: true,
+			},
+		});
+	}
+}

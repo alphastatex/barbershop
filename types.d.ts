@@ -88,4 +88,11 @@ interface Window {
   Telegram: {
     WebApp: TelegramWebApp;
   };
+  // ДОБАВЛЕНО ДЛЯ GSAP: говорим, что эти объекты есть в window
+  gsap: typeof import("gsap").gsap;
+  ScrollTrigger: typeof import("gsap/ScrollTrigger").ScrollTrigger;
 }
+
+// ДОБАВЛЕНО ДЛЯ GSAP: глобальные переменные (чтобы app.js не ругался)
+declare const gsap: typeof import("gsap").gsap;
+declare const ScrollTrigger: typeof import("gsap/ScrollTrigger").ScrollTrigger;
